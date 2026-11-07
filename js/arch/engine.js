@@ -666,10 +666,10 @@
         stageTitle.appendChild(h('i'));
         stageTitle.appendChild(h('div', null, h('b', null, node.title || node.id), node.subtitle ? h('small', null, node.subtitle) : null));
       }
-      // Show the full label briefly, then shrink it (and fade the hint) so it doesn't cover the diagram.
+      // Show the full label for 0.5 s, then shrink it (and fade the hint) so it doesn't cover the diagram.
       stageTitle.classList.remove('mini'); hint.classList.remove('gone');
       clearTimeout(st.miniTimer);
-      st.miniTimer = setTimeout(() => { stageTitle.classList.add('mini'); hint.classList.add('gone'); }, 2500);
+      st.miniTimer = setTimeout(() => { stageTitle.classList.add('mini'); hint.classList.add('gone'); }, 500);
       const lv = node && node.level != null ? Math.min(7, Math.max(0, node.level)) : -1;
       ladder.querySelectorAll('.arch-rung').forEach(r => { const l = +r.dataset.l; r.classList.toggle('on', l === lv); r.classList.toggle('past', l < lv); });
       if (st.treeOpen) renderTree();
