@@ -1,0 +1,100 @@
+/* Noise & Signal Integrity Lab (Agent E) — all classes prefixed .nz- */
+.nz .nz-pane{animation:fadein .3s ease}
+.nz .nz-small{font-size:12.5px}
+.nz canvas{display:block;max-width:100%}
+.nz-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.nz-seg{display:inline-flex;gap:0}
+.nz-seg .btn{border-radius:0}
+.nz-seg .btn:first-child{border-radius:8px 0 0 8px}
+.nz-seg .btn:last-child{border-radius:0 8px 8px 0}
+
+.nz-lab{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1250px){.nz-lab{grid-template-columns:1fr}.nz-ctrl{position:static!important;max-height:none!important}}
+.nz-ctrl{position:sticky;top:12px;max-height:calc(100vh - 40px);overflow:auto;padding:12px 12px 16px}
+.nz-ctrl-h{font-weight:700;letter-spacing:.4px;text-transform:uppercase;font-size:12px;color:var(--muted);margin:0 0 6px}
+.nz-ctrl details{border-top:1px solid var(--line);padding:6px 0}
+.nz-ctrl summary{cursor:pointer;font-weight:600;font-size:14px;padding:4px 2px;list-style:none;display:flex;align-items:center;gap:8px}
+.nz-ctrl summary::-webkit-details-marker{display:none}
+.nz-ctrl summary::after{content:'▸';margin-left:auto;color:var(--muted);transition:transform .2s}
+.nz-ctrl details[open] summary::after{transform:rotate(90deg)}
+.nz-dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 8px currentColor;flex:none}
+.nz-row{grid-template-columns:118px 1fr 92px;gap:6px;margin:4px 0}
+.nz-row label{font-size:12.5px;color:var(--text);line-height:1.25}
+.nz-row output{font-size:12px}
+.nz-check{display:flex;gap:6px;align-items:center;font-size:13px;margin:6px 0}
+.nz-gnote{font-size:11.5px;font-family:var(--mono);line-height:1.45;margin:4px 0 2px;padding:5px 7px;background:rgba(255,255,255,.02);border-radius:6px}
+.nz-gnote:empty{display:none}
+
+.nz-main{min-width:0}
+.nz-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.nz-kpi{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.nz-kl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.nz-kv{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--accent);transition:color .2s}
+.nz-kv.bad{color:var(--bad)}
+.nz-kv.good{color:var(--good)}
+.nz-ks{font-size:11.5px;min-height:15px}
+
+.nz-head{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-bottom:8px}
+.nz-head h3{margin:0}
+.nz-eyecard{padding:12px}
+.nz-eyewrap{display:grid;grid-template-columns:4.5fr 1fr;gap:6px}
+.nz-eye,.nz-hist{width:100%;height:auto;border-radius:8px;border:1px solid var(--line);box-shadow:0 0 24px rgba(34,211,238,.06) inset}
+.nz-g{margin-top:16px}
+.nz-plot{width:100%;height:auto}
+
+.nz-budwrap{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center}
+@media (max-width:1500px){.nz-budwrap{grid-template-columns:1fr}.nz .nz-donut{max-width:200px;margin:0 auto}}
+.nz .nz-donut{width:100%;max-width:200px;height:auto;filter:drop-shadow(0 0 10px rgba(118,185,0,.15))}
+.nz-budlist{display:flex;flex-direction:column;gap:3px;font-size:12.5px}
+.nz-brow{display:grid;grid-template-columns:10px minmax(0,1.6fr) 1fr 46px 62px;gap:6px;align-items:center}
+.nz-brow.dim{opacity:.45}
+.nz-sw{width:10px;height:10px;border-radius:3px}
+.nz-bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nz-bbar{height:7px;background:var(--panel2);border-radius:4px;overflow:hidden;display:block}
+.nz-bbar i{display:block;height:100%;border-radius:4px;transition:width .3s}
+.nz-bv{font-family:var(--mono);text-align:right}
+.nz-bs{font-family:var(--mono);text-align:right;font-size:11.5px}
+
+.nz-pen{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.nz-prow{display:grid;grid-template-columns:minmax(0,1.4fr) 1fr 72px;gap:8px;align-items:center;font-size:13px}
+.nz-prow b{font-family:var(--mono);text-align:right;color:var(--text)}
+.nz-live{font-size:12.5px}
+
+/* sources */
+.nz-chaincard{padding:8px 12px;margin-bottom:16px}
+.nz-chain{width:100%;height:auto;display:block}
+.nz-stage rect{fill:var(--panel2);stroke-width:1.6;transition:.2s}
+.nz-stage text{fill:var(--text);font-size:12.5px}
+.nz-stage.hl rect{fill:rgba(118,185,0,.18);stroke:var(--accent)!important;stroke-width:3;filter:drop-shadow(0 0 6px var(--accent))}
+.nz-flow{fill:none;stroke-width:3;stroke-dasharray:6 8;animation:nzflow 1.2s linear infinite}
+.nz-flow.optic{stroke:var(--optic)}
+.nz-flow.data{stroke:var(--data)}
+.nz-flow.ctrl{stroke:var(--ctrl)}
+.nz-flow.power{stroke:var(--power);stroke-width:2;opacity:.75}
+@keyframes nzflow{to{stroke-dashoffset:-28}}
+.nz-mark{cursor:pointer}
+.nz-mark circle{stroke:var(--bg);stroke-width:1.5;transition:r .15s}
+.nz-mark:hover circle{r:11}
+.nz-mark text{fill:#081000;font-size:10px;font-weight:700;pointer-events:none}
+.nz-cards{align-items:start}
+.nz-src{border-top:3px solid var(--accent);font-size:13.5px;transition:transform .2s, box-shadow .2s}
+.nz-src:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.nz-src p{margin:6px 0}
+.nz-src .eq{font-size:12px}
+.nz-src-h{display:flex;gap:9px;align-items:center}
+.nz-src-h h3{margin:4px 0}
+.nz-num{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#081000;flex:none}
+.nz-thumbwrap{position:relative;margin:6px 0}
+.nz-thumb{width:100%;height:auto;border-radius:7px;border:1px solid var(--line);background:var(--bg)}
+.nz-thumbl{position:absolute;right:8px;bottom:6px;font-size:10.5px;color:var(--muted);background:rgba(7,9,12,.7);padding:1px 6px;border-radius:4px}
+
+/* spectrum */
+.nz-spec{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media (max-width:1250px){.nz-spec{grid-template-columns:1fr}}
+.nz-specctl .slider-row{grid-template-columns:110px 1fr 96px}
+.nz-specctl .slider-row label{font-size:12.5px}
+.nz-rj{margin:12px 0;padding:10px 12px;border:1px solid var(--ctrl);border-radius:10px;background:rgba(167,139,250,.07)}
+.nz-rj .nz-kv{color:var(--ctrl)}
+.nz-leg{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0 4px;font-size:12.5px}
+.nz-chip{display:inline-flex;gap:6px;align-items:center}
+.nz-chip i{width:14px;height:4px;border-radius:2px;display:inline-block}

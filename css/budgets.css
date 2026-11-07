@@ -1,0 +1,41 @@
+/* System Budgets section (Agent F) — all classes prefixed .bd- */
+.bd-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.bd-tabs .tab{display:flex;gap:6px;align-items:center}
+.bd-layout{display:grid;grid-template-columns:minmax(340px,.9fr) minmax(0,1.6fr);gap:16px;align-items:start}
+.bd-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:1150px){.bd-layout,.bd-cols{grid-template-columns:1fr}}
+.bd-group{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 0 4px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.bd-sl{grid-template-columns:minmax(130px,1.3fr) 1.3fr 92px;margin:3px 0}
+.bd-sl label{font-size:13px;color:var(--text)}
+.bd-sl output{font-size:12px}
+.bd-svg{width:100%;height:auto;display:block;margin:6px 0}
+.bd-svg text{fill:var(--muted);font:11px var(--mono)}
+.bd-svg .bd-grid line{stroke:var(--line);stroke-width:1;opacity:.55}
+.bd-svg .bd-frame{fill:none;stroke:var(--line)}
+.bd-svg .bd-axl{fill:var(--text);font:12px "Segoe UI",sans-serif}
+.bd-svg .bd-lbl{fill:var(--text)}
+.bd-svg .bd-photon{fill:var(--optic);filter:drop-shadow(0 0 4px var(--optic))}
+.bd-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 10px}
+.bd-kpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.bd-kl{font-size:12px;color:var(--muted)}
+.bd-kv{font-family:var(--mono);font-size:20px;color:var(--accent);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-kv.bad{color:var(--bad)} .bd-kv.warn{color:var(--warn)} .bd-kv.good{color:var(--good)}
+.bd-ks{font-size:11px;color:var(--muted)}
+.bd-seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+.bd-seg .btn{padding:4px 10px;font-size:13px}
+.bd-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.bd-table td,.bd-table th{padding:3px 8px;font-size:12.5px}
+.bd-table td.n{font-family:var(--mono);text-align:right}
+.bd-canvas{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.bd-levers{border-left-color:var(--accent);background:rgba(118,185,0,.07)}
+.bd-levers b{color:var(--accent)}
+.bd-flow{fill:none;stroke-dasharray:3 9;animation:bdflow 1.1s linear infinite}
+@keyframes bdflow{to{stroke-dashoffset:-24}}
+.bd-note{font-size:12px;color:var(--muted)}
+.bd-pass{color:var(--good);font-weight:600} .bd-fail{color:var(--bad);font-weight:600}
+.bd-expl p{margin:6px 0}
+.bd-expl ul{margin:6px 0;padding-left:20px}
+.bd-status{font-family:var(--mono);font-size:13px;margin:6px 0}
+.bd-chk{display:inline-flex;gap:6px;align-items:center;font-size:13px;cursor:pointer}
+.bd-mini{font-size:13px}
+.bd-scroll{overflow-x:auto}
