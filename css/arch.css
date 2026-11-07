@@ -36,12 +36,23 @@
   background:linear-gradient(180deg,rgba(118,185,0,.05),transparent 18%,transparent 85%,rgba(34,211,238,.04))}
 .arch-svg{display:block;width:100%;height:auto;aspect-ratio:5/3;user-select:none;font-family:"Segoe UI",Inter,system-ui,sans-serif}
 .arch-svg text{pointer-events:none}
-.arch-stage-title{position:absolute;left:14px;top:12px;display:flex;gap:10px;align-items:center;pointer-events:none;
+.arch-stage-title{position:absolute;left:14px;top:12px;display:flex;gap:10px;align-items:center;pointer-events:auto;cursor:default;
+  transition:padding .35s ease,max-width .35s ease,opacity .35s ease,gap .35s ease;
   background:rgba(5,8,11,.72);border:1px solid var(--line);border-left:3px solid var(--dc,var(--accent));border-radius:10px;padding:6px 12px;
   backdrop-filter:blur(4px);max-width:55%;z-index:2}
 .arch-stage-title i{width:10px;height:10px;border-radius:50%;background:var(--dc);box-shadow:0 0 10px var(--dc);flex:none}
 .arch-stage-title b{display:block;font-size:14px}
-.arch-stage-title small{display:block;color:var(--muted);font-size:11.5px;line-height:1.3}
+.arch-stage-title small{display:block;color:var(--muted);font-size:11.5px;line-height:1.3;max-height:60px;overflow:hidden;transition:max-height .35s ease,opacity .35s ease}
+.arch-stage-title b{transition:font-size .35s ease}
+/* minimized: small translucent pill with the title only; hover to expand */
+.arch-stage-title.mini{padding:2px 9px;gap:6px;opacity:.7;max-width:260px}
+.arch-stage-title.mini b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arch-stage-title.mini small{max-height:0;opacity:0}
+.arch-stage-title.mini i{width:7px;height:7px}
+.arch-stage-title.mini:hover{padding:6px 12px;gap:10px;opacity:1;max-width:55%}
+.arch-stage-title.mini:hover b{font-size:14px;white-space:normal}
+.arch-stage-title.mini:hover small{max-height:60px;opacity:1}
+.arch-hint{transition:opacity .6s ease}.arch-hint.gone{opacity:0}
 .arch-hint{position:absolute;left:14px;bottom:10px;font-size:11.5px;color:var(--muted);background:rgba(5,8,11,.6);padding:3px 10px;border-radius:999px;pointer-events:none;z-index:2}
 .arch-toast{position:absolute;left:50%;top:14px;transform:translate(-50%,-10px);opacity:0;transition:.25s;background:#0b1118;border:1px solid var(--warn);
   color:var(--text);padding:7px 14px;border-radius:9px;font-size:13px;pointer-events:none;z-index:4;box-shadow:0 8px 24px rgba(0,0,0,.5)}
