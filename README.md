@@ -1,7 +1,8 @@
 # CPO Switch Academy
 
 Interactive, browser-based training on NVIDIA-style **co-packaged optics (CPO) switches**: architecture
-(power, data, control, optics, thermal, sensing, feedback loops, interfaces), KPIs, a real-time data-flow
+(power, data, control, optics, thermal, sensing, feedback loops, interfaces), a plain-language
+**AI factory** tour (building → network topology → rack → GPU → transistor, tied to the CPO switches), KPIs, a real-time data-flow
 simulator, a noise & signal-integrity lab, system budgets (link, BER/FEC, power, thermal, accuracy, jitter)
 and a 650+ term glossary.
 
