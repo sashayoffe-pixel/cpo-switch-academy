@@ -1,0 +1,22 @@
+/* skills module styles */
+.skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .skills-grid { grid-template-columns: 1fr; } }
+.skills-lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin: 8px 0; }
+.skills-card { border: 1px solid var(--line2); border-radius: 10px; padding: 8px 10px; background: rgba(10,15,31,.6); font-size: 13px; transition: border-color .2s, background .2s; }
+.skills-card b { display: block; direction: ltr; text-align: left; font-family: var(--mono); font-size: 12.5px; color: #fff; }
+.skills-card .skills-score { float: inline-end; font-size: 12px; color: var(--muted); }
+.skills-card.l1 { border-color: #38bdf8; }
+.skills-card.l2 { border-color: #a78bfa; background: rgba(167,139,250,.12); }
+.skills-card.l3 { border-color: #f59e0b; background: rgba(245,158,11,.12); }
+.skills-meter { display: flex; height: 22px; border-radius: 11px; overflow: hidden; background: #0a0f1f; border: 1px solid var(--line2); margin: 4px 0 4px; }
+.skills-meter i { display: block; height: 100%; transition: width .5s ease; }
+.skills-meter .s0 { background: #38bdf8; } .skills-meter .s1 { background: #a78bfa; } .skills-meter .s2 { background: #f59e0b; } .skills-meter .s3 { background: #f87171; }
+.skills-legend { font-size: 12.5px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.skills-form { display: grid; gap: 8px; }
+.skills-form label { display: grid; gap: 3px; font-size: 13.5px; color: var(--muted); }
+.skills-form input[type=text], .skills-form textarea { width: 100%; }
+.skills-warn { margin: 4px 0; padding: 6px 10px; border-radius: 8px; font-size: 13.5px; border: 1px solid var(--line2); }
+.skills-warn.bad { border-color: #f87171; background: rgba(248,113,113,.1); }
+.skills-warn.ok { border-color: #4ade80; background: rgba(74,222,128,.1); }
+.skills-warn.mid { border-color: #f59e0b; background: rgba(245,158,11,.1); }
+.skills-tree { font-family: var(--mono); direction: ltr; text-align: left; font-size: 13px; white-space: pre; background: #0a0f1f; border: 1px solid var(--line2); border-radius: 10px; padding: 10px 12px; }

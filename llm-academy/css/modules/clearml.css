@@ -1,0 +1,34 @@
+/* clearml module styles */
+.clearml-ctl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 24px; margin: 8px 0; }
+@media (max-width: 900px) { .clearml-ctl { grid-template-columns: 1fr; } }
+.clearml-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+.clearml-sel { background: var(--panel2); color: var(--text); border: 1px solid var(--line2); border-radius: 8px; padding: 6px 10px; font: inherit; }
+.clearml-runs { font-size: 13px; direction: ltr; }
+.clearml-runs td, .clearml-runs th { padding: 6px 8px; white-space: nowrap; text-align: left; }
+.clearml-runs tr.sel td { background: rgba(167, 139, 250, .16); }
+.clearml-runs tr.best td { box-shadow: inset 0 0 0 1px rgba(74, 222, 128, .5); }
+.clearml-runs tr { cursor: pointer; }
+.clearml-chart { background: #0a0f1f; border: 1px solid var(--line2); border-radius: 12px; margin: 8px 0; }
+.clearml-chart svg { width: 100%; height: auto; display: block; direction: ltr; }
+.clearml-chart text { font-family: var(--mono); font-size: 10.5px; fill: #9aa5c7; }
+.clearml-queues { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 10px 0; }
+@media (max-width: 900px) { .clearml-queues { grid-template-columns: 1fr; } }
+.clearml-q { background: var(--panel); border: 1px solid var(--line2); border-radius: 12px; padding: 10px; min-height: 120px; }
+.clearml-q h5 { margin: 0 0 6px; font-size: 14px; display: flex; justify-content: space-between; }
+.clearml-chip { display: inline-block; background: rgba(167, 139, 250, .18); border: 1px solid var(--acc); border-radius: 8px; padding: 2px 9px; margin: 2px; font-size: 12.5px; font-family: var(--mono); direction: ltr; }
+.clearml-chip.run { background: rgba(245, 158, 11, .18); border-color: var(--amber); }
+.clearml-chip.done { background: rgba(74, 222, 128, .15); border-color: var(--ok); }
+.clearml-ag { display: flex; align-items: center; gap: 8px; background: #0a0f1f; border: 1px dashed var(--line2); border-radius: 8px; padding: 5px 8px; margin: 5px 0; font-size: 13px; }
+.clearml-ag.busy { border-style: solid; border-color: var(--amber); }
+.clearml-dot { width: 9px; height: 9px; border-radius: 50%; background: #64748b; flex: none; }
+.clearml-ag.busy .clearml-dot { background: var(--amber); }
+.clearml-pipe { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; direction: rtl; }
+.clearml-ps { flex: 1 1 130px; background: var(--panel); border: 1px solid var(--line2); border-radius: 12px; padding: 8px 10px; font-size: 13px; position: relative; opacity: .55; transition: .2s; }
+.clearml-ps.on { opacity: 1; border-color: var(--acc); box-shadow: 0 0 0 2px rgba(167, 139, 250, .35); }
+.clearml-ps.done { opacity: 1; border-color: var(--ok); }
+.clearml-ps b { display: block; margin-bottom: 2px; }
+.clearml-q-tag { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line2); direction: ltr; margin-top: 3px; }
+.clearml-q-tag.gpu { color: var(--amber); border-color: var(--amber); }
+.clearml-q-tag.cpu { color: var(--acc2); border-color: var(--acc2); }
+.clearml-q-tag.svc { color: var(--pink); border-color: var(--pink); }
+.clearml-toy { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 99px; background: rgba(245, 158, 11, .15); border: 1px solid rgba(245, 158, 11, .5); color: var(--amber); }
