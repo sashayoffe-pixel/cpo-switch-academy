@@ -1,0 +1,16 @@
+/* home module */
+.home-hero { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 20px; align-items: center; }
+@media (max-width: 900px) { .home-hero { grid-template-columns: 1fr; } .home-hero-art { display: none; } }
+.home-hero h2 { font-size: 24px; color: #fff; }
+.home-net { width: 100%; height: auto; }
+.home-syn { stroke: #a78bfa; stroke-width: 1; opacity: .18; animation: home-pulse 3.2s ease-in-out infinite; }
+@keyframes home-pulse { 0%, 100% { opacity: .12; } 50% { opacity: .6; stroke: #38bdf8; } }
+.home-neu { fill: #151d35; stroke-width: 2.5; }
+.home-neu.l0 { stroke: #38bdf8; } .home-neu.l1 { stroke: #a78bfa; } .home-neu.l2 { stroke: #f472b6; } .home-neu.l3 { stroke: #fbbf24; fill: #2a2350; }
+.home-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.home-card { position: relative; display: block; background: var(--panel2); border: 1px solid var(--line); border-radius: 16px; padding: 16px; color: var(--text); transition: .2s; }
+.home-card:hover { text-decoration: none; border-color: var(--acc); transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.3); }
+.home-card h4 { margin: 6px 0 4px; font-size: 17px; }
+.home-card p { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
+.home-card-ic { font-size: 30px; }
+.home-card-n { position: absolute; top: 12px; left: 14px; color: var(--dim); font-weight: 800; font-size: 13px; }

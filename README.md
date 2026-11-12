@@ -16,3 +16,5 @@ and a 650+ term glossary.
 * Built only from public information. Numbers are badged **NVIDIA public** (announced figures),
   **typical** (industry-typical) or **estimate** (model assumptions). Not an official NVIDIA resource.
 * `CONTRACT.md` documents the internal API and the architecture-node schema for contributors.
+
+**New:** [`llm-academy/`](llm-academy/) — a separate, self-contained Hebrew interactive course on LLMs, RAG, LangChain, LangGraph, agents, Skills, ComfyUI and ClearML (live at `/llm-academy/` on the same site).
