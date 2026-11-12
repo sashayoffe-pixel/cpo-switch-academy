@@ -110,7 +110,7 @@
 
   function chatLab(el) {
     const st = {
-      ctx: [], turns: [], fullTokens: 0, cum: 0, cumFull: 0, n: 0, summaries: 0, dropped: 0, win: 900, policy: 'summarize', scriptIdx: 0, lastEvent: ''
+      ctx: [], turns: [], fullTokens: 0, cum: 0, cumFull: 0, n: 0, summaries: 0, dropped: 0, win: 600, policy: 'summarize', scriptIdx: 0, lastEvent: ''
     };
     const PIN = 3, POUT = 15; // $/M tokens, illustrative
     const sysBox = h('textarea', { class: 'chat-sysbox', dir: 'rtl' });
