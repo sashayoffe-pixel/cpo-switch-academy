@@ -147,6 +147,20 @@
     });
     return out;
   }
+  // Guided-tour order: depth-first from the root, children in the order their hotspots appear in the parent's scene.
+  function tourOrder() {
+    const out = [], seen = new Set();
+    (function rec(id) {
+      const n = getNode(id);
+      if (!n || seen.has(id)) return;
+      seen.add(id); out.push(id);
+      const kids = children(id).map(k => k.id), ord = [];
+      hotspotsFor(n).forEach(hs => { if (kids.indexOf(hs.target) >= 0 && ord.indexOf(hs.target) < 0) ord.push(hs.target); });
+      kids.forEach(k => { if (ord.indexOf(k) < 0) ord.push(k); });
+      ord.forEach(rec);
+    })(rootId());
+    return out;
+  }
   function hotspotsFor(node) {
     if (!node) return [];
     return typeof node.scene === 'function' ? (node.hotspots || []).filter(x => x && x.target) : autoHotspots(node);
@@ -198,7 +212,13 @@
     const crumbs = h('nav', { class: 'arch-crumbs', 'aria-label': 'Breadcrumb' });
     const treeBtn = h('button', { class: 'btn arch-btn', title: 'Show the whole node tree', onclick: () => toggleTree() }, '🗺 Tree');
     const labelBtn = h('button', { class: 'btn arch-btn', title: 'Always show hotspot labels', onclick: () => toggleLabels() }, '🏷 Labels');
-    const toolbar = h('div', { class: 'arch-toolbar' }, backBtn, upBtn, crumbs, h('div', { class: 'arch-spacer' }), labelBtn, treeBtn);
+    const tourPrev = h('button', { class: 'btn arch-btn', title: 'Previous block in the guided tour (←)', onclick: () => tourStep(-1) }, '◀ Prev');
+    const tourNext = h('button', { class: 'btn primary arch-btn arch-next', title: 'Next block in the guided tour (→)', onclick: () => tourStep(1) }, 'Next ▶');
+    const tourPos = h('span', { class: 'arch-tourpos' });
+    const toolbar = h('div', { class: 'arch-toolbar' }, tourPrev, tourNext, tourPos, crumbs, h('div', { class: 'arch-spacer' }), backBtn, upBtn, labelBtn, treeBtn);
+    const tourFootPrev = h('button', { class: 'btn', onclick: () => tourStep(-1) });
+    const tourFootNext = h('button', { class: 'btn primary arch-bignext', onclick: () => tourStep(1) });
+    const tourFoot = h('div', { class: 'arch-tourfoot' }, tourFootPrev, h('span', { class: 'muted arch-tourtip' }, 'Guided tour: press Next (or →) to visit every block in order, top to bottom.'), tourFootNext);
 
     const domBtns = {};
     const allBtn = h('button', { class: 'arch-dom active', onclick: () => { st.filters.clear(); applyFilters(); } }, 'All layers');
@@ -241,9 +261,11 @@
     container.appendChild(toolbar);
     container.appendChild(domainBar);
     container.appendChild(h('div', { class: 'arch-main' }, stage, panel));
+    container.appendChild(tourFoot);
 
     // ----- master animation ticker -----
     const stopTicker = C.loop(dt => {
+      dt = Math.max(0, dt); // the first rAF timestamp can precede performance.now() → tiny negative dt
       st.sceneT += dt;
       const fns = st.fns;
       for (let i = 0; i < fns.length; i++) {
@@ -659,6 +681,15 @@
           : h('a', { class: 'arch-crumb', href: '#architecture/' + n.id, style: '--dc:' + colorOf(n.domain), onclick: e => { e.preventDefault(); navTo(n.id); } }, n.title || n.id));
       });
       upBtn.disabled = !(node && node.parent && getNode(node.parent));
+      {
+        const order = tourOrder(), i = node ? order.indexOf(node.id) : -1;
+        const pv = i > 0 ? getNode(order[i - 1]) : null, nx = i >= 0 && i < order.length - 1 ? getNode(order[i + 1]) : null;
+        tourPrev.disabled = tourFootPrev.disabled = !pv;
+        tourPos.textContent = i >= 0 ? 'Tour ' + (i + 1) + ' / ' + order.length : '';
+        tourFootPrev.textContent = pv ? '← ' + (pv.title || pv.id) : '← Prev';
+        tourFootNext.textContent = nx ? 'Next: ' + (nx.title || nx.id) + ' →' : (i >= 0 ? 'Tour complete: back to start ↺' : 'Start the tour →');
+        tourNext.textContent = nx || i < 0 ? 'Next ▶' : 'Restart ↺';
+      }
       backBtn.disabled = !st.history.length;
       stageTitle.innerHTML = '';
       if (node) {
@@ -727,6 +758,14 @@
       const want = 'architecture/' + id;
       if (decodeURIComponent(location.hash.replace(/^#\/?/, '')) === want) navigate(id);
       else C.go(want);
+    }
+    function tourStep(d) {
+      const order = tourOrder(); if (!order.length) return;
+      const i = st.cur ? order.indexOf(st.cur.id) : -1;
+      let j = i < 0 ? 0 : i + d;
+      if (j >= order.length) j = 0;
+      if (j < 0) return;
+      navTo(order[j]);
     }
     function goUp() { if (st.cur && st.cur.parent && getNode(st.cur.parent)) navTo(st.cur.parent); }
     function goBack() { if (!st.history.length) return; const prev = st.history.pop(); st.skipPush = true; navTo(prev); }
@@ -815,8 +854,11 @@
 
     // ----- keyboard -----
     function onKey(e) {
-      if (e.key !== 'Escape') return;
       const tg = e.target && e.target.tagName;
+      if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && !(tg === 'INPUT' || tg === 'TEXTAREA' || tg === 'SELECT') && !st.treeOpen && !e.altKey && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault(); tourStep(e.key === 'ArrowRight' ? 1 : -1); return;
+      }
+      if (e.key !== 'Escape') return;
       if (tg === 'INPUT' || tg === 'TEXTAREA' || tg === 'SELECT') { if (st.treeOpen) { e.target.blur(); } return; }
       if (st.treeOpen) { toggleTree(false); return; }
       goUp();

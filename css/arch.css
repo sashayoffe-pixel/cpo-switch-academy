@@ -171,3 +171,11 @@
 .arch-f-eff{color:#f5d27a}
 .arch-f-mit{color:#a6e86b}
 .arch-f-arrow{color:#55657a}
+
+/* guided tour */
+.arch-next{min-width:92px}
+.arch-tourpos{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:4px}
+.arch-tourfoot{display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.arch-tourtip{margin-right:auto;font-size:12.5px}
+.arch-bignext{font-size:15px;padding:10px 20px}
+@media (max-width:800px){.arch-tourtip{display:none}}
