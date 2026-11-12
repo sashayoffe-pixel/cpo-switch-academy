@@ -457,7 +457,7 @@ react = b.compile()
         const row = h('div', { class: 'lg-row' + (d ? ' chg' : '') + (v === undefined ? ' unset' : '') });
         row.appendChild(h('div', { class: 'lg-k' }, h('code', null, k), REDUCER[k] ? h('span', { class: 'badge acc' }, REDUCER[k]) : null, d ? h('span', { class: 'lg-chg' }, REDUCER[k] ? 'מוזג' : 'נדרס') : null));
         row.appendChild(h('pre', { class: 'lg-v' }, fmtVal(k, v)));
-        if (d && !REDUCER[k] && d.old !== undefined) row.appendChild(h('div', { class: 'lg-old' }, 'קודם: ' + fmtVal(k, d.old)));
+        if (d && !REDUCER[k] && d.old !== undefined) row.appendChild(h('div', { class: 'lg-old del' }, 'קודם: ' + fmtVal(k, d.old)));
         if (d && REDUCER[k]) row.appendChild(h('div', { class: 'lg-old' }, '+' + ((d.nw || []).length - (d.old || []).length) + ' פריטים נוספו'));
         statePanel.appendChild(row);
       });
