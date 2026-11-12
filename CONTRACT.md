@@ -112,7 +112,7 @@ exist the engine shows it disabled ("coming soon"), so cross-agent ids below are
 | F System budgets | js/sections/budgets.js, css/budgets.css |
 | G Home + KPIs | js/sections/home.js, js/sections/kpis.js, css/kpis.css |
 | H Glossary | js/data/glossary.js, js/sections/glossary.js, css/glossary.css |
-| I AI Factory (building → transistor) | js/sections/factory.js, css/factory.css |
+| I AI Factory course (building → transistor) | js/sections/factory.js, js/sections/factory-appendix.js, css/factory.css |
 
 Section ids/orders: home 0, guide 5, factory 8, architecture 10, kpis 20, dataflow 30, noise 40, budgets 50, glossary 90.
 

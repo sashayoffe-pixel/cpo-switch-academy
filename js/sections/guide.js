@@ -27,13 +27,14 @@
       how: ['Read the pluggable-vs-CPO animation first: it is the "why" behind every design choice in the rest of the app.',
         'Tick off items in the 4-week study plan. Ticks are saved in this browser only (localStorage), so each device keeps its own progress.',
         'Use the learning-path cards to jump to any section.'] },
-    { id: 'factory', ico: '🏭', t: 'AI Factory → Transistor', what: 'A plain-language zoom through 11 levels: the AI factory building, its spine-and-leaf network, an NVL72 rack, a compute tray, the GPU package, die, SM, Tensor Core, logic gates, CMOS and a single transistor. Each level shows how it connects to the CPO switches.',
-      how: ['<b>Click the dashed green regions</b> to zoom in, use the level buttons to jump, and press <span class="gd-kbd">Esc</span> or <b>↑ Zoom out</b> to go back up.',
+    { id: 'factory', ico: '🏭', t: 'AI Factory Course', what: 'A guided, plain-language course you click through with Next: 11 zoom levels (AI factory, network topology, NVL72 rack, compute tray, GPU package, die, SM, Tensor Core, logic gates, CMOS, transistor), 4 "put it together" steps, and a 4-chapter appendix (the AI factory, network topologies, how GPUs work, how AI jobs use the network). Every level shows how it connects to the CPO switches.',
+      how: ['Just press <b>Next →</b> (or the <span class="gd-kbd">→</span> key). <b>← Back</b> or <span class="gd-kbd">←</span> goes back. The diagram zooms into the next level by itself.',
+        'The progress bar at the top shows where you are; <b>☰ Contents</b> lets you jump. Your place is remembered, so you can resume later.',
         'Read the <b>"In plain words"</b> box first, then the orange <b>"Connection to the CPO switch"</b> box.',
-        'In the gate, CMOS and transistor levels, <b>click the inputs or the gate</b> to flip them yourself.',
-        'Follow one piece of data from transistor to light and back in the <b>journey</b> diagram, then try the <b>savings calculator</b> with different factory sizes.'] },
+        'In the gate, CMOS and transistor levels you can <b>click the inputs or the gate</b> to flip them yourself. The appendix has small calculators to play with.'] },
     { id: 'architecture', ico: '🔬', t: 'Architecture Explorer', what: 'The centerpiece: a zoomable map of the whole system, 67 levels deep, from the AI-factory network down to transistors, ring resonators and laser quantum wells.',
-      how: ['<b>Click a glowing region</b> in the diagram to zoom into that block. Hover a region to see its label.',
+      how: ['<b>Guided tour:</b> press <b>Next ▶</b> (or <span class="gd-kbd">→</span>) to visit every block in order, from the system down to the deepest physics; <b>◀ Prev</b> / <span class="gd-kbd">←</span> goes back.',
+        'Or explore freely: <b>click a glowing region</b> in the diagram to zoom into that block. Hover a region to see its label.',
         '<b>Zoom out:</b> <span class="gd-kbd">Esc</span> or <b>↑ Up</b>. <b>← Back</b> returns to where you were. Click any breadcrumb to jump to that level.',
         '<b>🗺 Tree</b> opens the full node tree with a filter box, which is the fastest way to jump anywhere ("ring", "vrm", "tia"…).',
         '<b>🏷 Labels</b> shows every hotspot label at once, useful on a touch screen where you cannot hover.',
@@ -87,8 +88,8 @@
         C.h('h3', { style: 'margin-top:0' }, 'Quick start'),
         C.h('ol', { class: 'gd-steps', html:
           '<li>Use the <b>left menu</b> to switch sections. On narrow screens it shrinks to icons.</li>' +
-          '<li>Start with <b>Overview</b> for the big picture, then open the <b>Architecture Explorer</b>.</li>' +
-          '<li>In the explorer, <b>click glowing regions to zoom in</b>. Press <span class="gd-kbd">Esc</span> or <b>↑ Up</b> to zoom out.</li>' +
+          '<li>Start with the <b>AI Factory Course</b> and just press <b>Next</b> until the end, then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
+          '<li>Use <b>Next ▶</b> / the <span class="gd-kbd">→</span> key to move step by step; you never have to choose where to click.</li>' +
           '<li><b>Hover any dotted-underlined abbreviation</b> (e.g. ' + C.tip('MRM') + ') for its definition. <span class="gd-kbd">Alt</span>+click opens it in the Glossary.</li>' +
           '<li>Move the <b>sliders</b> in the Simulator, Noise Lab and Budgets and watch everything update live.</li>' })),
       C.h('div', null, d.svg, C.h('div', { class: 'muted', style: 'font-size:12px;margin-top:4px' }, 'Demo: click a region → the view zooms into it.'))));

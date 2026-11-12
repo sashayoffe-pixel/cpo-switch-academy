@@ -706,107 +706,180 @@
   // ---------------------------------------------------------------- render
   let live = null;
 
+  // Guided course: every step is one page; the learner only presses Next.
+  const LAST_KEY = 'af-last-step';
+
   function render(el, sub) {
-    el.appendChild(h('div', { class: 'af-hero' },
-      h('div', { class: 'af-eyebrow' }, 'From the building to the transistor'),
-      h('h1', { html: 'Inside an <em>AI factory</em>: how it works, level by level' }),
-      h('p', { html: 'This section zooms through <b>11 levels</b>, from a gigawatt building down to a single 50 nm transistor. At each stop you get a plain-language explanation, a few real numbers, and how that level connects to the <b style="color:var(--optic)">co-packaged optics (CPO) switches</b>.' }),
+    // ------------------------------------------------ course bar (sticky)
+    const btnPrev = h('button', { class: 'btn af-prev', onclick: () => step(-1) }, '← Back');
+    const btnNext = h('button', { class: 'btn primary af-next', onclick: () => step(1) }, 'Next →');
+    const barTitle = h('div', { class: 'af-bar-title' });
+    const barTrack = h('div', { class: 'af-track' });
+    const tocBtn = h('button', { class: 'btn af-tocbtn', title: 'All steps', onclick: () => toc.classList.toggle('open') }, '☰ Contents');
+    const toc = h('div', { class: 'af-toc' });
+    el.appendChild(h('div', { class: 'af-bar' }, btnPrev, h('div', { class: 'af-bar-mid' }, barTitle, barTrack), tocBtn, btnNext, toc));
+
+    const pagesEl = h('div', { class: 'af-pages' });
+    el.appendChild(pagesEl);
+    const bottomPrev = h('button', { class: 'btn', onclick: () => step(-1) }, '← Back');
+    const bottomNext = h('button', { class: 'btn primary af-bignext', onclick: () => step(1) });
+    el.appendChild(h('div', { class: 'af-bottom' }, bottomPrev, h('span', { class: 'af-keys muted' }, 'Tip: use the ← → arrow keys'), bottomNext));
+
+    // ------------------------------------------------ pages
+    const pages = {};
+    function page(id) { const p = h('div', { class: 'af-page', 'data-id': id }); pagesEl.appendChild(p); pages[id] = p; return p; }
+
+    // intro
+    const resumeId = (() => { try { return localStorage.getItem(LAST_KEY); } catch (e) { return null; } })();
+    const pIntro = page('start');
+    pIntro.appendChild(h('div', { class: 'af-hero' },
+      h('div', { class: 'af-eyebrow' }, 'Guided course · about 30–45 minutes'),
+      h('h1', { html: 'Inside an <em>AI factory</em>: from the building to the transistor' }),
+      h('p', { html: 'You don\'t need to choose anything: just press <b>Next</b>. The course zooms through <b>11 levels</b>, from a gigawatt building down to one 50 nm transistor, then puts it all together, and ends with an <b>appendix</b> that goes deeper. At every stop you\'ll see how it connects to the <b style="color:var(--optic)">co-packaged optics (CPO) switches</b>.' }),
       h('div', { class: 'af-analogy', html:
         '<div><span>🏭</span><b>Factory</b>power and cooling in, tokens out</div>' +
         '<div><span>🛣️</span><b>Road network</b>leaf & spine CPO switches connect every rack</div>' +
         '<div><span>👷</span><b>Workers</b>GPUs, each with thousands of calculators</div>' +
-        '<div><span>💡</span><b>Light switches</b>transistors, 208 billion per GPU</div>' })));
+        '<div><span>💡</span><b>Light switches</b>transistors, 208 billion per GPU</div>' }),
+      h('div', { class: 'af-cta' },
+        h('button', { class: 'btn primary af-bignext', onclick: () => step(1) }, 'Start the course →'),
+        resumeId && resumeId !== 'start' && resumeId !== 'done' ? h('button', { class: 'btn', onclick: () => goId(resumeId) }, 'Resume where you left off') : null)));
+    pIntro.appendChild(h('div', { class: 'card', html: '<h3 style="margin-top:0">The route</h3><ol class="af-route">' +
+      '<li><b>Zoom in, 11 steps:</b> AI factory → network topology → rack → compute tray → GPU package → die → SM → Tensor Core → logic gates → CMOS → transistor.</li>' +
+      '<li><b>Put it together, 4 steps:</b> the four networks, one piece of data\'s journey through light and copper, what CPO saves at factory scale, and a recap of the sizes.</li>' +
+      '<li><b>Appendix, 4 chapters:</b> the AI factory in depth, network topologies in depth, how GPUs work, and how training and inference use the network.</li></ol>' +
+      '<p class="muted" style="margin:0">Each level shows a diagram (it animates; the scene zooms into the next level when you press Next), a box <b style="color:var(--accent)">"In plain words"</b>, key numbers, and an orange box <b style="color:var(--optic)">"Connection to the CPO switch"</b>.</p>' }));
 
-    // ladder
-    el.appendChild(h('h2', null, '1 · Zoom from the building to the transistor'));
-    const ladder = h('div', { class: 'af-ladder' });
-    const rungs = LV.map((l, i) => {
-      const b = h('button', { class: 'af-rung' + (l.cpo ? ' cpo' : ''), title: l.title, onclick: () => goTo(i, i > cur ? 'in' : 'out') },
-        h('i', null, String(i)), h('b', null, l.name), h('small', null, l.size));
-      ladder.appendChild(b); return b;
-    });
-    el.appendChild(ladder);
-    el.appendChild(h('div', { class: 'af-zoomhint' , html: 'Click the <b style="color:var(--accent)">dashed green regions</b> to zoom in, or jump with the buttons above. Levels with an <span style="color:var(--optic)">orange underline</span> connect directly to the CPO switches.' }));
-
+    // levels share one stage + panel
     const svg = S('svg', { viewBox: '0 0 1000 600', class: 'af-svg', role: 'img' });
     const cam = S('g', {}); svg.appendChild(cam);
     const scaleTag = h('div', { class: 'af-scale' });
     const stage = h('div', { class: 'af-stage' }, svg);
-    const btnUp = h('button', { class: 'btn', onclick: () => cur > 0 && goTo(cur - 1, 'out') }, '↑ Zoom out');
-    const btnIn = h('button', { class: 'btn primary', onclick: () => zoomDefault() }, 'Zoom in ↓');
-    const pos = h('span', { class: 'af-pos' });
     const panel = h('div', { class: 'card af-panel' });
-    el.appendChild(h('div', { class: 'af-main' },
-      h('div', null, stage, h('div', { class: 'af-nav' }, btnUp, btnIn, scaleTag, pos)),
-      panel));
+    const lvlNote = h('div', { class: 'af-zoomhint', html: 'Press <b>Next</b> and the picture zooms into the highlighted part. (You can also click a <b style="color:var(--accent)">dashed green region</b> yourself.)' });
+    const pLevel = page('__level');
+    pLevel.appendChild(h('div', { class: 'af-main' }, h('div', null, stage, h('div', { class: 'af-nav' }, scaleTag), lvlNote), panel));
 
-    // the four networks
-    el.appendChild(h('h2', null, '2 · The four networks of an AI factory'));
-    el.appendChild(h('p', { class: 'h-sub' }, 'An AI factory actually has several separate networks, each built for a different job. CPO switches live in the scale-out network, which is the largest by far in number of optical links.'));
-    el.appendChild(h('div', { class: 'af-nets', html:
+    // networks
+    const pNets = page('networks');
+    pNets.appendChild(h('h2', { class: 'af-ph' }, 'The four networks of an AI factory'));
+    pNets.appendChild(h('p', { class: 'h-sub' }, 'You have now seen every level. Zoom back out: an AI factory actually has several separate networks, each built for a different job. CPO switches live in the scale-out network, which has by far the most optical links.'));
+    pNets.appendChild(h('div', { class: 'af-nets', html:
       net('var(--accent)', 'Scale-up', 'NVLink', 'Inside the rack. Lets 72 GPUs share memory and act as one. Extremely fast, very short reach.', 'copper · ≤ ~2 m · 1.8 TB/s per GPU ' + B('nv')) +
       net('var(--optic)', 'Scale-out ★ CPO lives here', 'Compute fabric', 'Between racks. Every GPU gets its own 800G port into a leaf/spine fat tree. InfiniBand (Quantum-X Photonics) or Ethernet (Spectrum-X Photonics).', 'fiber · 10 m – 1 km+ · 800 Gb/s per GPU ' + B('nv')) +
       net('var(--data)', 'Front-end', 'Storage & users', 'Loads training data, saves checkpoints, carries user requests and answers. Uses BlueField DPUs over Ethernet.', 'fiber / copper · 100–400 Gb/s ' + B('typ')) +
       net('var(--ctrl)', 'Management', 'Out-of-band', 'A small, separate, very reliable network for BMCs, telemetry, firmware updates, power and cooling control.', 'copper · 1–10 Gb/s ' + B('typ')) }));
-    el.appendChild(h('div', { class: 'callout', html: '<b>And beyond the building:</b> "scale-across" links join several AI factories over long-haul fiber, so a single job can span sites. Those use long-reach coherent optics rather than CPO.' }));
+    pNets.appendChild(h('div', { class: 'callout', html: '<b>And beyond the building:</b> "scale-across" links join several AI factories over long-haul fiber, so a single job can span sites. Those use long-reach coherent optics rather than CPO.' }));
 
     // journey
-    el.appendChild(h('h2', null, '3 · Follow one piece of data: transistor → light → transistor'));
-    el.appendChild(h('p', { class: 'h-sub' }, 'One result travels from one GPU to a GPU in another rack. Watch where it is electricity (cyan) and where it is light (orange), and where the CPO switches sit.'));
+    const pJour = page('journey');
+    pJour.appendChild(h('h2', { class: 'af-ph' }, 'Follow one piece of data: transistor → light → transistor'));
+    pJour.appendChild(h('p', { class: 'h-sub' }, 'One result travels from a GPU to a GPU in another rack. The animation steps through it by itself; watch where it is electricity (cyan) and where it is light (orange), and where the CPO switches sit.'));
     const jsvg = S('svg', { viewBox: '0 0 1000 340', class: 'af-jsvg' });
     const jlist = h('ol', { class: 'af-steps' });
     const jdesc = h('div', { class: 'callout' });
     const jplay = h('button', { class: 'btn' }, '⏸ Pause');
-    el.appendChild(h('div', { class: 'af-journey' }, h('div', null, jsvg, jdesc, h('div', { class: 'af-nav' }, jplay)), h('div', { class: 'card' }, jlist)));
+    pJour.appendChild(h('div', { class: 'af-journey' }, h('div', null, jsvg, jdesc, h('div', { class: 'af-nav' }, jplay)), h('div', { class: 'card' }, jlist)));
     const jr = buildJourney(jsvg);
 
     // calculator
-    el.appendChild(h('h2', null, '4 · What CPO switches save at factory scale'));
-    el.appendChild(h('p', { class: 'h-sub' }, 'Pick a factory size. The calculator builds a non-blocking fat tree, counts the optical links, and compares switches with pluggable transceivers against CPO switches.'));
-    const calc = buildCalc();
-    el.appendChild(calc.el);
+    const pCalc = page('savings');
+    pCalc.appendChild(h('h2', { class: 'af-ph' }, 'What CPO switches save at factory scale'));
+    pCalc.appendChild(h('p', { class: 'h-sub' }, 'Drag the GPU slider. The calculator builds a non-blocking fat tree, counts the optical links, and compares switches with pluggable transceivers against CPO switches.'));
+    pCalc.appendChild(buildCalc().el);
 
-    // powers of ten
-    el.appendChild(h('h2', null, '5 · The scale of it all'));
+    // scale recap
+    const pScale = page('scale');
+    pScale.appendChild(h('h2', { class: 'af-ph' }, 'Recap: the scale of it all'));
     const tb = h('table', { class: 'table af-pow' });
     tb.innerHTML = '<tr><th>Size</th><th>Level</th><th>Made of</th><th>Talks to its neighbours with</th></tr>';
     const madeOf = ['racks, power, cooling, network', 'leaf & spine CPO switches, fiber', 'trays, NVLink switches, copper spine', 'GPUs, CPUs, NICs', '2 dies + 8 HBM stacks', '~100+ SMs, cache, SerDes', '4 Tensor Cores, 128 CUDA cores', 'arrays of multiply-adders', 'logic gates', 'transistor pairs', 'silicon, atoms, electrons'];
     const talk = ['long-haul fiber (scale-across)', 'fiber + CPO optical engines', 'copper NVLink + fiber out', 'NVLink, PCIe, cold-plate plumbing', 'NV-HBI 10 TB/s, interposer wires', 'on-chip wires, L2 cache', 'registers, shared memory', 'wires a few µm long', 'wires < 1 µm', 'metal layers', 'the electric field of the gate'];
-    LV.forEach((l, i) => {
-      const tr = h('tr', { onclick: () => { goTo(i, 'jump'); stage.scrollIntoView({ behavior: 'smooth', block: 'center' }); } },
-        h('td', null, l.size), h('td', null, h('b', null, l.name)), h('td', { class: 'muted' }, madeOf[i]), h('td', { class: 'muted' }, talk[i]));
-      tb.appendChild(tr);
+    LV.forEach((l, i) => tb.appendChild(h('tr', { onclick: () => goId(l.id) },
+      h('td', null, l.size), h('td', null, h('b', null, l.name)), h('td', { class: 'muted' }, madeOf[i]), h('td', { class: 'muted' }, talk[i]))));
+    pScale.appendChild(h('div', { class: 'card' }, tb, h('p', { class: 'muted', style: 'margin:8px 0 0;font-size:13px' }, 'From ~500 m to ~50 nm is a zoom of about 10,000,000,000× (10¹⁰). Click a row to revisit that level.')));
+    pScale.appendChild(h('div', { class: 'af-plain', html: '<b>The one idea to keep:</b> at every level, <b>moving data costs more energy and time than computing on it</b>. HBM sits next to the GPU die, NVLink keeps 72 GPUs on copper, and CPO puts the optics next to the switch die, all for the same reason: shorter electrical paths, fewer conversions, less energy per bit.' }));
+    pScale.appendChild(h('div', { class: 'callout', html: 'Next comes the <b>appendix</b>: four chapters that go deeper into the AI factory, network topologies, GPUs, and how AI jobs use the network. Keep pressing Next.' }));
+
+    // appendix chapters (content in factory-appendix.js)
+    const APX = C.factoryAppendix || [];
+    const apxCleanups = [];
+    APX.forEach((ch, i) => {
+      const p = page(ch.id);
+      p.appendChild(h('div', { class: 'af-apx-head' }, h('span', { class: 'af-apx-tag' }, 'Appendix ' + String.fromCharCode(65 + i)), h('h2', { class: 'af-ph' }, ch.title)));
+      if (ch.lead) p.appendChild(h('p', { class: 'h-sub', html: ch.lead }));
+      const body = h('div', { class: 'af-apx' }); p.appendChild(body);
+      body.innerHTML = ch.html;
+      if (ch.mount) { const c = ch.mount(body); if (typeof c === 'function') apxCleanups.push(c); }
     });
-    el.appendChild(h('div', { class: 'card' }, tb, h('p', { class: 'muted', style: 'margin:8px 0 0;font-size:13px' }, 'From ~500 m to ~50 nm is a zoom of about 10,000,000,000× (10¹⁰). Click a row to jump there.')));
 
-    el.appendChild(h('div', { class: 'callout warn', html: 'Numbers marked ' + B('nv') + ' are NVIDIA public announcements (GB200 NVL72, Blackwell, Quantum-X / Spectrum-X Photonics). ' + B('typ') + ' are industry-typical orders of magnitude for intuition, and ' + B('est') + ' are simple model estimates. Diagrams are simplified illustrations, not floor plans or die photos.' }));
+    // finish
+    const pDone = page('done');
+    pDone.appendChild(h('div', { class: 'af-hero' },
+      h('div', { class: 'af-eyebrow' }, 'Course complete'),
+      h('h1', { html: 'You went from a <em>gigawatt</em> to a <em>transistor</em>' }),
+      h('ul', { class: 'af-takeaways', html:
+        '<li>An AI factory turns <b>power into tokens</b>; its output is limited by power, cooling and how fast GPUs can talk.</li>' +
+        '<li>Inside a rack GPUs talk over <b>copper NVLink</b>; between racks they talk over <b>fiber</b> through a <b>leaf/spine fat tree</b>.</li>' +
+        '<li>Training stops at the <b>slowest message</b>: one bad link stalls thousands of GPUs, so network reliability is critical.</li>' +
+        '<li>A GPU is <b>two dies + HBM</b>; each die is a grid of <b>SMs</b>; each SM has <b>Tensor Cores</b> that do matrix math made of gates made of transistors.</li>' +
+        '<li><b>Moving bits costs far more energy than computing on them</b>: femtojoules per gate flip vs ~15–20 pJ per bit through a pluggable optic.</li>' +
+        '<li><b>CPO switches</b> put the optics in the switch package: ~3.5× better power efficiency, 4× fewer lasers, 10× better resiliency ' + B('nv') + '.</li>' }),
+      h('div', { class: 'af-cta' },
+        h('button', { class: 'btn primary', onclick: () => C.go('architecture') }, 'Continue: Architecture Explorer tour →'),
+        h('button', { class: 'btn', onclick: () => goId('start') }, '↺ Restart the course'))));
+    pDone.appendChild(h('div', { class: 'callout warn', html: 'Numbers marked ' + B('nv') + ' are NVIDIA public announcements (GB200 NVL72, Blackwell, Quantum-X / Spectrum-X Photonics). ' + B('typ') + ' are industry-typical orders of magnitude for intuition, and ' + B('est') + ' are simple model estimates. Diagrams are simplified illustrations, not floor plans or die photos.' }));
 
-    // ------------------------------------------------ scene engine
-    let cur = -1, scene = null, sceneG = null, anim = null, t0 = performance.now() / 1000;
+    // ------------------------------------------------ step list
+    const STEPS = [{ id: 'start', page: 'start', title: 'Welcome', ch: 'Start' }]
+      .concat(LV.map((l, i) => ({ id: l.id, page: '__level', lvl: i, title: l.title, ch: 'Zoom in' })))
+      .concat([
+        { id: 'networks', page: 'networks', title: 'The four networks', ch: 'Put it together' },
+        { id: 'journey', page: 'journey', title: 'One piece of data\'s journey', ch: 'Put it together' },
+        { id: 'savings', page: 'savings', title: 'What CPO saves', ch: 'Put it together' },
+        { id: 'scale', page: 'scale', title: 'Recap: the scale of it all', ch: 'Put it together' }])
+      .concat(APX.map((a, i) => ({ id: a.id, page: a.id, title: 'Appendix ' + String.fromCharCode(65 + i) + ': ' + a.short, ch: 'Appendix' })))
+      .concat([{ id: 'done', page: 'done', title: 'Course complete', ch: 'Finish' }]);
+    const SIDX = {}; STEPS.forEach((s2, i) => { SIDX[s2.id] = i; });
+
+    const dots = STEPS.map((s2, i) => {
+      const d = h('button', { class: 'af-dot ch-' + s2.ch.replace(/\W+/g, '').toLowerCase(), title: (i + 1) + '. ' + s2.title, onclick: () => goStep(i) });
+      if (i && STEPS[i - 1].ch !== s2.ch) barTrack.appendChild(h('span', { class: 'af-gap' }));
+      barTrack.appendChild(d); return d;
+    });
+    let lastCh = '';
+    STEPS.forEach((s2, i) => {
+      if (s2.ch !== lastCh) { toc.appendChild(h('div', { class: 'af-toc-ch' }, s2.ch)); lastCh = s2.ch; }
+      toc.appendChild(h('a', { href: '#factory/' + s2.id, onclick: e => { e.preventDefault(); toc.classList.remove('open'); goStep(i); } }, (i + 1) + '. ' + s2.title));
+    });
+
+    // ------------------------------------------------ scene engine (levels)
+    let cur = -1, lvlCur = -1, scene = null, sceneG = null, anim = null, t0 = performance.now() / 1000;
     const seen = new Set();
 
     function camT(rect, e) {
       if (!rect || e <= 0) return '';
-      const s = Math.pow(Math.min(1000 / rect.w, 600 / rect.h), e);
+      const s2 = Math.pow(Math.min(1000 / rect.w, 600 / rect.h), e);
       const cx = C.lerp(500, rect.x + rect.w / 2, e), cy = C.lerp(300, rect.y + rect.h / 2, e);
-      return 'translate(500 300) scale(' + s + ') translate(' + (-cx) + ' ' + (-cy) + ')';
+      return 'translate(500 300) scale(' + s2 + ') translate(' + (-cx) + ' ' + (-cy) + ')';
     }
     function build(i) {
       if (sceneG) sceneG.remove();
       sceneG = S('g', {});
       cam.appendChild(sceneG);
-      const bg = S('rect', { x: 0, y: 0, width: 1000, height: 600, fill: K.bg }); sceneG.appendChild(bg);
+      sceneG.appendChild(S('rect', { x: 0, y: 0, width: 1000, height: 600, fill: K.bg }));
       const content = S('g', {}); sceneG.appendChild(content);
       scene = LV[i].scene(content) || {};
       t0 = performance.now() / 1000;
       (scene.hot || []).forEach(hs => {
-        const hg = S('g', { class: 'af-hot', tabindex: 0, role: 'button', 'aria-label': hs.label });
+        const hg = S('g', { class: 'af-hot' + (hs.go ? ' go' : ''), tabindex: 0, role: 'button', 'aria-label': hs.label });
         hg.appendChild(S('rect', { class: 'hz', x: hs.x, y: hs.y, width: hs.w, height: hs.h, rx: 6 }));
         const ty = hs.inside ? hs.y + 24 : hs.below || hs.y <= 40 ? hs.y + hs.h + 20 : hs.y - 8;
-        const lw = hs.label.length * 7.4 + 24;
+        const label = hs.go ? hs.label : 'Next: ' + LV[IDX[hs.target]].name;
+        const lw = label.length * 7.4 + 24;
         const lx = C.clamp(hs.x + hs.w / 2 - lw / 2, 4, 996 - lw);
         hg.appendChild(S('rect', { x: lx, y: ty - 15, width: lw, height: 21, rx: 10, fill: hs.go ? '#3a1a0d' : '#1b2a10', stroke: hs.go ? K.optic : K.acc }));
-        hg.appendChild(S('text', { x: lx + lw / 2, y: ty, 'text-anchor': 'middle', 'font-size': 12.5, fill: '#fff', 'font-weight': 600 }, (hs.go ? '' : '🔍 ') + hs.label));
+        hg.appendChild(S('text', { x: lx + lw / 2, y: ty, 'text-anchor': 'middle', 'font-size': 12.5, fill: '#fff', 'font-weight': 600 }, (hs.go ? '' : '🔍 ') + label));
         const act = () => hs.go ? C.go(hs.go) : zoomInto(hs);
         hg.addEventListener('click', act);
         hg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
@@ -816,33 +889,27 @@
     function fillPanel(i) {
       const l = LV[i];
       panel.innerHTML = '';
-      panel.appendChild(h('div', { class: 'muted', style: 'font-size:12px;font-family:var(--mono)' }, 'Level ' + i + ' of ' + (LV.length - 1) + ' · ' + l.size));
+      panel.appendChild(h('div', { class: 'muted', style: 'font-size:12px;font-family:var(--mono)' }, 'Level ' + (i + 1) + ' of ' + LV.length + ' · ' + l.size));
       panel.appendChild(h('h2', null, l.title));
       panel.appendChild(h('div', { class: 'af-sub' }, l.sub));
       panel.appendChild(h('div', { class: 'af-plain', html: '<b>In plain words:</b> ' + l.plain }));
       panel.appendChild(h('div', { html: l.body }));
       panel.appendChild(h('div', { class: 'af-facts', html: l.facts.map(f => '<div class="af-fact"><b>' + f[0] + '</b><span>' + f[1] + ' ' + B(f[2]) + '</span></div>').join('') }));
       panel.appendChild(h('div', { class: 'af-cpo', html: '<h4>🔗 Connection to the CPO switch</h4><p>' + l.cpoTxt + '</p>' }));
-      panel.appendChild(h('details', { class: 'af-more', html: '<summary>Go a little deeper</summary><div>' + l.more + '</div>' }));
-      if (l.links.length) panel.appendChild(h('div', { class: 'af-links' }, l.links.map(([href, lbl]) => h('a', { class: 'btn', href: '#' + href }, lbl + ' →'))));
+      panel.appendChild(h('div', { class: 'af-more', html: '<h4>A little deeper</h4><div>' + l.more + '</div>' }));
+      if (l.links.length) panel.appendChild(h('div', { class: 'af-links' }, h('span', { class: 'muted', style: 'font-size:12.5px;align-self:center' }, 'Optional detours:'), l.links.map(([href, lbl]) => h('a', { class: 'btn', href: '#' + href }, lbl + ' ↗'))));
       C.linkify(panel);
+      panel.scrollTop = 0;
     }
-    function show(i, how) {
-      const prev = cur; cur = i; seen.add(i);
+    function showLevel(i, how) {
+      const prev = lvlCur; lvlCur = i; seen.add(i);
       build(i); fillPanel(i);
-      rungs.forEach((r, k) => { r.classList.toggle('on', k === i); r.classList.toggle('seen', seen.has(k)); });
-      if (rungs[i].scrollIntoView && prev !== -1) rungs[i].scrollIntoView({ block: 'nearest', inline: 'nearest' });
       scaleTag.innerHTML = 'scale ≈ <b>' + LV[i].size + '</b> across';
-      pos.textContent = (i + 1) + ' / ' + LV.length;
-      btnUp.disabled = i === 0; btnIn.disabled = !(scene.hot || []).some(x => x.target);
-      // entry animation
       const dur = REDUCED ? 0 : 0.6;
       if (how === 'out' && prev > i) {
-        const back = (scene.hot || []).find(x => x.target === LV[prev].id) || (scene.hot || [])[0];
-        anim = back ? { from: 1, to: 0, rect: back, t: 0, dur } : null;
-      } else if (how === 'in') {
-        anim = { fadeIn: true, t: 0, dur: dur * 0.8 };
-      } else anim = { fadeIn: true, t: 0, dur: dur * 0.5 };
+        const back = (scene.hot || []).find(x => x.target === LV[prev].id);
+        anim = back ? { from: 1, to: 0, rect: back, t: 0, dur } : { fadeIn: true, t: 0, dur: dur * 0.5 };
+      } else anim = { fadeIn: true, t: 0, dur: how === 'in' ? dur * 0.8 : dur * 0.5 };
       applyAnim(0);
     }
     function applyAnim(dt) {
@@ -855,42 +922,65 @@
     }
     function zoomInto(hs) {
       if (anim && !anim.fadeIn) return;
-      const target = IDX[hs.target];
-      anim = { from: 0, to: 1, rect: hs, t: 0, dur: REDUCED ? 0 : 0.65, onDone: () => goTo(target, 'in') };
+      const target = SIDX[hs.target];
+      anim = { from: 0, to: 1, rect: hs, t: 0, dur: REDUCED ? 0 : 0.65, onDone: () => goStep(target, 'in') };
     }
-    function zoomDefault() { const hs = (scene.hot || []).find(x => x.target); if (hs) zoomInto(hs); }
-    function goTo(i, how) {
-      if (i === cur) return;
-      show(i, how); // show immediately (no flash); the hash update below is then a no-op in onSub
-      const hash = 'factory/' + LV[i].id;
+
+    // ------------------------------------------------ stepping
+    function goStep(k, how) {
+      k = C.clamp(k, 0, STEPS.length - 1);
+      if (k === cur) return;
+      const prev = cur; cur = k;
+      const st = STEPS[k];
+      Object.values(pages).forEach(p => p.classList.toggle('on', p === pages[st.page]));
+      if (st.page === '__level') showLevel(st.lvl, how || (prev > k ? 'out' : 'jump'));
+      btnPrev.disabled = bottomPrev.disabled = k === 0;
+      const nx = STEPS[k + 1];
+      btnNext.textContent = nx ? 'Next →' : 'Finish ✓';
+      bottomNext.textContent = nx ? 'Next: ' + nx.title + ' →' : 'Go to the Architecture Explorer →';
+      barTitle.innerHTML = '<span class="af-ch">' + st.ch + '</span> · Step ' + (k + 1) + ' of ' + STEPS.length + ' · <b>' + C.esc(st.title) + '</b>';
+      dots.forEach((d, i) => { d.classList.toggle('on', i === k); d.classList.toggle('done', i < k); });
+      try { localStorage.setItem(LAST_KEY, st.id); } catch (e) { /* private mode */ }
+      const main = document.getElementById('main');
+      if (main && prev !== -1) main.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+      const hash = 'factory/' + st.id;
       if (location.hash.replace(/^#\/?/, '') !== hash) C.go(hash);
     }
-    function onSub(subId) {
-      const i = IDX[subId] != null ? IDX[subId] : 0;
-      if (i === cur) return;
-      show(i, i < cur ? 'out' : 'jump');
+    function goId(id) { if (SIDX[id] != null) goStep(SIDX[id]); }
+    function step(d) {
+      if (d > 0 && cur === STEPS.length - 1) { C.go('architecture'); return; }
+      const st = STEPS[cur], nx = STEPS[cur + d];
+      if (d > 0 && st.page === '__level' && nx && nx.page === '__level') {
+        const hs = (scene.hot || []).find(x => x.target === nx.id);
+        if (hs && !REDUCED) { zoomInto(hs); return; }
+      }
+      goStep(cur + d, d < 0 && st.page === '__level' ? 'out' : undefined);
     }
+    function onSub(subId) { const i = SIDX[subId] != null ? SIDX[subId] : 0; if (i !== cur) goStep(i); }
     function onKey(e) {
       if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
-      if (e.key === 'Escape' && cur > 0) goTo(cur - 1, 'out');
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+      else if (e.key === 'ArrowLeft' || (e.key === 'Escape' && !toc.classList.contains('open'))) { if (cur > 0) { e.preventDefault(); step(-1); } }
+      else if (e.key === 'Escape') toc.classList.remove('open');
     }
     document.addEventListener('keydown', onKey);
 
-    show(IDX[sub] != null ? IDX[sub] : 0, 'jump');
+    goStep(SIDX[sub] != null ? SIDX[sub] : 0);
     live = { onSub };
 
     const stop = C.loop((dt) => {
+      dt = Math.max(0, dt);
       const now = performance.now() / 1000;
       applyAnim(dt);
-      if (scene && scene.update) scene.update(REDUCED ? 0 : now - t0, REDUCED ? 0 : dt);
-      jr.update(dt);
+      if (STEPS[cur].page === '__level' && scene && scene.update) scene.update(REDUCED ? 0 : now - t0, REDUCED ? 0 : dt);
+      if (STEPS[cur].page === 'journey') jr.update(dt);
     });
 
-    // journey control
     jplay.addEventListener('click', () => { jr.auto = !jr.auto; jplay.textContent = jr.auto ? '⏸ Pause' : '▶ Play'; });
     jr.mount(jlist, jdesc, () => { jr.auto = false; jplay.textContent = '▶ Play'; });
 
-    return () => { stop(); document.removeEventListener('keydown', onKey); live = null; };
+    return () => { stop(); document.removeEventListener('keydown', onKey); apxCleanups.forEach(f => { try { f(); } catch (e) { /* ignore */ } }); live = null; };
   }
 
   function net(col, tag, name, txt, med) {
@@ -1012,7 +1102,7 @@
   }
 
   C.registerSection({
-    id: 'factory', title: 'AI Factory → Transistor', icon: '🏭', order: 8, render,
+    id: 'factory', title: 'AI Factory Course', icon: '🏭', order: 8, render,
     onSubRoute(sub) { if (live) live.onSub(sub); }
   });
 })();
