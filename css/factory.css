@@ -1,4 +1,4 @@
-/* AI Factory section (.af-) — building → topology → rack → GPU → transistor */
+/* Guided courses (.af-): shared by the AI Factory course and the CPO Switch course (js/course-engine.js) */
 .af-hero{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;padding:30px 34px;margin-bottom:20px;
   background:radial-gradient(900px 300px at 85% 40%,rgba(34,211,238,.10),transparent 60%),radial-gradient(700px 300px at 10% 100%,rgba(118,185,0,.10),transparent 60%),#05080b}
 .af-hero h1{font-size:34px;line-height:1.15;margin:6px 0 10px}
@@ -87,10 +87,10 @@
 @media (max-width:700px){.af-out{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .af-out .af-fact b{font-size:19px}
 .af-bars{margin-top:12px}
-.af-bar{display:grid;grid-template-columns:120px 1fr 110px;gap:10px;align-items:center;margin:6px 0;font-size:13px}
-.af-bar .tr{height:16px;background:var(--panel2);border-radius:5px;overflow:hidden}
-.af-bar .tr i{display:block;height:100%;border-radius:5px;transition:width .35s}
-.af-bar output{font-family:var(--mono);text-align:right}
+.af-hbar{display:grid;grid-template-columns:120px 1fr 110px;gap:10px;align-items:center;margin:6px 0;font-size:13px}
+.af-hbar .tr{height:16px;background:var(--panel2);border-radius:5px;overflow:hidden}
+.af-hbar .tr i{display:block;height:100%;border-radius:5px;transition:width .35s}
+.af-hbar output{font-family:var(--mono);text-align:right}
 .af-seg{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
 
 /* sizes table */

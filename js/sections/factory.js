@@ -5,13 +5,7 @@
   const C = window.CPO;
   const h = C.h, S = C.s, B = C.badge;
 
-  // theme colours (hex so they work in every SVG presentation attribute)
-  const K = {
-    bg: '#05070a', panel: '#111720', panel2: '#18202c', line: '#243042', text: '#e6edf5', muted: '#8a99ad',
-    acc: '#76b900', data: '#22d3ee', optic: '#ff6b3d', power: '#facc15', ctrl: '#a78bfa', therm: '#ff5a36',
-    cool: '#3b82f6', copper: '#d08a4a', sense: '#f472b6'
-  };
-  const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const K = C.course.K;
 
   C.addGlossary({
     'NVL72': { full: 'GB200 NVL72 rack', def: 'NVIDIA rack-scale system: 72 Blackwell GPUs and 36 Grace CPUs joined by copper NVLink so they act as one large GPU; liquid cooled.', cat: 'system' },
@@ -35,30 +29,7 @@
     'GB200': { full: 'Grace Blackwell 200 superchip', def: 'One Grace CPU and two Blackwell GPUs on one board, linked by NVLink-C2C.', cat: 'system' }
   });
 
-  // ---------------------------------------------------------------- small SVG helpers
-  function add(g, el) { g.appendChild(el); return el; }
-  function R(g, x, y, w, hh, o) { return add(g, S('rect', Object.assign({ x, y, width: w, height: hh, rx: 4, fill: K.panel, stroke: K.line }, o || {}))); }
-  function T(g, x, y, str, o) { return add(g, S('text', Object.assign({ x, y, fill: K.text, 'font-size': 14 }, o || {}), str)); }
-  function L(g, x1, y1, x2, y2, o) { return add(g, S('line', Object.assign({ x1, y1, x2, y2, stroke: K.line, 'stroke-width': 1.5 }, o || {}))); }
-  function P(g, d, o) { return add(g, S('path', Object.assign({ d, fill: 'none', stroke: K.line, 'stroke-width': 1.5 }, o || {}))); }
-  function O(g, cx, cy, r, o) { return add(g, S('circle', Object.assign({ cx, cy, r, fill: K.data }, o || {}))); }
-  function G(g, o) { return add(g, S('g', o || {})); }
-  function cap(g, x, y, str, col) { return T(g, x, y, str, { fill: col || K.muted, 'font-size': 13, 'font-weight': 700, 'letter-spacing': 1.6 }); }
-  function polyLen(pts) { let s = 0; for (let i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return s; }
-  function along(pts, u) {
-    const tot = polyLen(pts); let d = ((u % 1) + 1) % 1 * tot;
-    for (let i = 1; i < pts.length; i++) {
-      const sl = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-      if (d <= sl || i === pts.length - 1) { const k = sl ? Math.min(1, d / sl) : 0; return [C.lerp(pts[i - 1][0], pts[i][0], k), C.lerp(pts[i - 1][1], pts[i][1], k)]; }
-      d -= sl;
-    }
-    return pts[pts.length - 1];
-  }
-  function ptsD(pts) { return 'M' + pts.map(p => p[0] + ' ' + p[1]).join(' L'); }
-  function grid(g, x, y, w, hh, step, col) {
-    for (let i = x; i <= x + w; i += step) L(g, i, y, i, y + hh, { stroke: col, 'stroke-width': 0.6 });
-    for (let j = y; j <= y + hh; j += step) L(g, x, j, x + w, j, { stroke: col, 'stroke-width': 0.6 });
-  }
+  const { add, R, T, L, P, O, G, cap, along, ptsD, grid } = C.course.svg;
 
   // ---------------------------------------------------------------- scenes (viewBox 0 0 1000 600)
   function sFactory(g) {
@@ -684,7 +655,6 @@
       more: 'The transistor\'s physics (threshold voltage, leakage, subthreshold slope) and the micro-ring\'s physics (carrier depletion shifting the refractive index) are both covered in depth in the Architecture explorer.',
       links: [['architecture/transistor', 'Transistor physics (deep)'], ['architecture/mrm', 'Micro-ring modulator'], ['architecture/optical-engine', 'Optical engine']] }
   ];
-  const IDX = {}; LV.forEach((l, i) => { IDX[l.id] = i; });
 
   // ---------------------------------------------------------------- one bit's journey
   const JP = [
@@ -703,338 +673,8 @@
     { r: [7, 11], t: 'Light → electricity → math', d: 'The destination NIC turns light back into electricity, writes into the other GPU\'s HBM, and its Tensor Cores add the numbers together (all-reduce). The whole trip takes a few microseconds, repeated millions of times per training step.' }
   ];
 
-  // ---------------------------------------------------------------- render
-  let live = null;
-
-  // Guided course: every step is one page; the learner only presses Next.
-  const LAST_KEY = 'af-last-step';
-
-  function render(el, sub) {
-    // ------------------------------------------------ course bar (sticky)
-    const btnPrev = h('button', { class: 'btn af-prev', onclick: () => step(-1) }, '← Back');
-    const btnNext = h('button', { class: 'btn primary af-next', onclick: () => step(1) }, 'Next →');
-    const barTitle = h('div', { class: 'af-bar-title' });
-    const barTrack = h('div', { class: 'af-track' });
-    const tocBtn = h('button', { class: 'btn af-tocbtn', title: 'All steps', onclick: () => toc.classList.toggle('open') }, '☰ Contents');
-    const toc = h('div', { class: 'af-toc' });
-    el.appendChild(h('div', { class: 'af-bar' }, btnPrev, h('div', { class: 'af-bar-mid' }, barTitle, barTrack), tocBtn, btnNext, toc));
-
-    const pagesEl = h('div', { class: 'af-pages' });
-    el.appendChild(pagesEl);
-    const bottomPrev = h('button', { class: 'btn', onclick: () => step(-1) }, '← Back');
-    const bottomNext = h('button', { class: 'btn primary af-bignext', onclick: () => step(1) });
-    el.appendChild(h('div', { class: 'af-bottom' }, bottomPrev, h('span', { class: 'af-keys muted' }, 'Tip: use the ← → arrow keys'), bottomNext));
-
-    // ------------------------------------------------ pages
-    const pages = {};
-    function page(id) { const p = h('div', { class: 'af-page', 'data-id': id }); pagesEl.appendChild(p); pages[id] = p; return p; }
-
-    // intro
-    const resumeId = (() => { try { return localStorage.getItem(LAST_KEY); } catch (e) { return null; } })();
-    const pIntro = page('start');
-    pIntro.appendChild(h('div', { class: 'af-hero' },
-      h('div', { class: 'af-eyebrow' }, 'Guided course · about 30–45 minutes'),
-      h('h1', { html: 'Inside an <em>AI factory</em>: from the building to the transistor' }),
-      h('p', { html: 'You don\'t need to choose anything: just press <b>Next</b>. The course zooms through <b>11 levels</b>, from a gigawatt building down to one 50 nm transistor, then puts it all together, and ends with an <b>appendix</b> that goes deeper. At every stop you\'ll see how it connects to the <b style="color:var(--optic)">co-packaged optics (CPO) switches</b>.' }),
-      h('div', { class: 'af-analogy', html:
-        '<div><span>🏭</span><b>Factory</b>power and cooling in, tokens out</div>' +
-        '<div><span>🛣️</span><b>Road network</b>leaf & spine CPO switches connect every rack</div>' +
-        '<div><span>👷</span><b>Workers</b>GPUs, each with thousands of calculators</div>' +
-        '<div><span>💡</span><b>Light switches</b>transistors, 208 billion per GPU</div>' }),
-      h('div', { class: 'af-cta' },
-        h('button', { class: 'btn primary af-bignext', onclick: () => step(1) }, 'Start the course →'),
-        resumeId && resumeId !== 'start' && resumeId !== 'done' ? h('button', { class: 'btn', onclick: () => goId(resumeId) }, 'Resume where you left off') : null)));
-    pIntro.appendChild(h('div', { class: 'card', html: '<h3 style="margin-top:0">The route</h3><ol class="af-route">' +
-      '<li><b>Zoom in, 11 steps:</b> AI factory → network topology → rack → compute tray → GPU package → die → SM → Tensor Core → logic gates → CMOS → transistor.</li>' +
-      '<li><b>Put it together, 4 steps:</b> the four networks, one piece of data\'s journey through light and copper, what CPO saves at factory scale, and a recap of the sizes.</li>' +
-      '<li><b>Appendix, 4 chapters:</b> the AI factory in depth, network topologies in depth, how GPUs work, and how training and inference use the network.</li></ol>' +
-      '<p class="muted" style="margin:0">Each level shows a diagram (it animates; the scene zooms into the next level when you press Next), a box <b style="color:var(--accent)">"In plain words"</b>, key numbers, and an orange box <b style="color:var(--optic)">"Connection to the CPO switch"</b>.</p>' }));
-
-    // levels share one stage + panel
-    const svg = S('svg', { viewBox: '0 0 1000 600', class: 'af-svg', role: 'img' });
-    const cam = S('g', {}); svg.appendChild(cam);
-    const scaleTag = h('div', { class: 'af-scale' });
-    const stage = h('div', { class: 'af-stage' }, svg);
-    const panel = h('div', { class: 'card af-panel' });
-    const lvlNote = h('div', { class: 'af-zoomhint', html: 'Press <b>Next</b> and the picture zooms into the highlighted part. (You can also click a <b style="color:var(--accent)">dashed green region</b> yourself.)' });
-    const pLevel = page('__level');
-    pLevel.appendChild(h('div', { class: 'af-main' }, h('div', null, stage, h('div', { class: 'af-nav' }, scaleTag), lvlNote), panel));
-
-    // networks
-    const pNets = page('networks');
-    pNets.appendChild(h('h2', { class: 'af-ph' }, 'The four networks of an AI factory'));
-    pNets.appendChild(h('p', { class: 'h-sub' }, 'You have now seen every level. Zoom back out: an AI factory actually has several separate networks, each built for a different job. CPO switches live in the scale-out network, which has by far the most optical links.'));
-    pNets.appendChild(h('div', { class: 'af-nets', html:
-      net('var(--accent)', 'Scale-up', 'NVLink', 'Inside the rack. Lets 72 GPUs share memory and act as one. Extremely fast, very short reach.', 'copper · ≤ ~2 m · 1.8 TB/s per GPU ' + B('nv')) +
-      net('var(--optic)', 'Scale-out ★ CPO lives here', 'Compute fabric', 'Between racks. Every GPU gets its own 800G port into a leaf/spine fat tree. InfiniBand (Quantum-X Photonics) or Ethernet (Spectrum-X Photonics).', 'fiber · 10 m – 1 km+ · 800 Gb/s per GPU ' + B('nv')) +
-      net('var(--data)', 'Front-end', 'Storage & users', 'Loads training data, saves checkpoints, carries user requests and answers. Uses BlueField DPUs over Ethernet.', 'fiber / copper · 100–400 Gb/s ' + B('typ')) +
-      net('var(--ctrl)', 'Management', 'Out-of-band', 'A small, separate, very reliable network for BMCs, telemetry, firmware updates, power and cooling control.', 'copper · 1–10 Gb/s ' + B('typ')) }));
-    pNets.appendChild(h('div', { class: 'callout', html: '<b>And beyond the building:</b> "scale-across" links join several AI factories over long-haul fiber, so a single job can span sites. Those use long-reach coherent optics rather than CPO.' }));
-
-    // journey
-    const pJour = page('journey');
-    pJour.appendChild(h('h2', { class: 'af-ph' }, 'Follow one piece of data: transistor → light → transistor'));
-    pJour.appendChild(h('p', { class: 'h-sub' }, 'One result travels from a GPU to a GPU in another rack. The animation steps through it by itself; watch where it is electricity (cyan) and where it is light (orange), and where the CPO switches sit.'));
-    const jsvg = S('svg', { viewBox: '0 0 1000 340', class: 'af-jsvg' });
-    const jlist = h('ol', { class: 'af-steps' });
-    const jdesc = h('div', { class: 'callout' });
-    const jplay = h('button', { class: 'btn' }, '⏸ Pause');
-    pJour.appendChild(h('div', { class: 'af-journey' }, h('div', null, jsvg, jdesc, h('div', { class: 'af-nav' }, jplay)), h('div', { class: 'card' }, jlist)));
-    const jr = buildJourney(jsvg);
-
-    // calculator
-    const pCalc = page('savings');
-    pCalc.appendChild(h('h2', { class: 'af-ph' }, 'What CPO switches save at factory scale'));
-    pCalc.appendChild(h('p', { class: 'h-sub' }, 'Drag the GPU slider. The calculator builds a non-blocking fat tree, counts the optical links, and compares switches with pluggable transceivers against CPO switches.'));
-    pCalc.appendChild(buildCalc().el);
-
-    // scale recap
-    const pScale = page('scale');
-    pScale.appendChild(h('h2', { class: 'af-ph' }, 'Recap: the scale of it all'));
-    const tb = h('table', { class: 'table af-pow' });
-    tb.innerHTML = '<tr><th>Size</th><th>Level</th><th>Made of</th><th>Talks to its neighbours with</th></tr>';
-    const madeOf = ['racks, power, cooling, network', 'leaf & spine CPO switches, fiber', 'trays, NVLink switches, copper spine', 'GPUs, CPUs, NICs', '2 dies + 8 HBM stacks', '~100+ SMs, cache, SerDes', '4 Tensor Cores, 128 CUDA cores', 'arrays of multiply-adders', 'logic gates', 'transistor pairs', 'silicon, atoms, electrons'];
-    const talk = ['long-haul fiber (scale-across)', 'fiber + CPO optical engines', 'copper NVLink + fiber out', 'NVLink, PCIe, cold-plate plumbing', 'NV-HBI 10 TB/s, interposer wires', 'on-chip wires, L2 cache', 'registers, shared memory', 'wires a few µm long', 'wires < 1 µm', 'metal layers', 'the electric field of the gate'];
-    LV.forEach((l, i) => tb.appendChild(h('tr', { onclick: () => goId(l.id) },
-      h('td', null, l.size), h('td', null, h('b', null, l.name)), h('td', { class: 'muted' }, madeOf[i]), h('td', { class: 'muted' }, talk[i]))));
-    pScale.appendChild(h('div', { class: 'card' }, tb, h('p', { class: 'muted', style: 'margin:8px 0 0;font-size:13px' }, 'From ~500 m to ~50 nm is a zoom of about 10,000,000,000× (10¹⁰). Click a row to revisit that level.')));
-    pScale.appendChild(h('div', { class: 'af-plain', html: '<b>The one idea to keep:</b> at every level, <b>moving data costs more energy and time than computing on it</b>. HBM sits next to the GPU die, NVLink keeps 72 GPUs on copper, and CPO puts the optics next to the switch die, all for the same reason: shorter electrical paths, fewer conversions, less energy per bit.' }));
-    pScale.appendChild(h('div', { class: 'callout', html: 'Next comes the <b>appendix</b>: four chapters that go deeper into the AI factory, network topologies, GPUs, and how AI jobs use the network. Keep pressing Next.' }));
-
-    // appendix chapters (content in factory-appendix.js)
-    const APX = C.factoryAppendix || [];
-    const apxCleanups = [];
-    APX.forEach((ch, i) => {
-      const p = page(ch.id);
-      p.appendChild(h('div', { class: 'af-apx-head' }, h('span', { class: 'af-apx-tag' }, 'Appendix ' + String.fromCharCode(65 + i)), h('h2', { class: 'af-ph' }, ch.title)));
-      if (ch.lead) p.appendChild(h('p', { class: 'h-sub', html: ch.lead }));
-      const body = h('div', { class: 'af-apx' }); p.appendChild(body);
-      body.innerHTML = ch.html;
-      if (ch.mount) { const c = ch.mount(body); if (typeof c === 'function') apxCleanups.push(c); }
-    });
-
-    // finish
-    const pDone = page('done');
-    pDone.appendChild(h('div', { class: 'af-hero' },
-      h('div', { class: 'af-eyebrow' }, 'Course complete'),
-      h('h1', { html: 'You went from a <em>gigawatt</em> to a <em>transistor</em>' }),
-      h('ul', { class: 'af-takeaways', html:
-        '<li>An AI factory turns <b>power into tokens</b>; its output is limited by power, cooling and how fast GPUs can talk.</li>' +
-        '<li>Inside a rack GPUs talk over <b>copper NVLink</b>; between racks they talk over <b>fiber</b> through a <b>leaf/spine fat tree</b>.</li>' +
-        '<li>Training stops at the <b>slowest message</b>: one bad link stalls thousands of GPUs, so network reliability is critical.</li>' +
-        '<li>A GPU is <b>two dies + HBM</b>; each die is a grid of <b>SMs</b>; each SM has <b>Tensor Cores</b> that do matrix math made of gates made of transistors.</li>' +
-        '<li><b>Moving bits costs far more energy than computing on them</b>: femtojoules per gate flip vs ~15–20 pJ per bit through a pluggable optic.</li>' +
-        '<li><b>CPO switches</b> put the optics in the switch package: ~3.5× better power efficiency, 4× fewer lasers, 10× better resiliency ' + B('nv') + '.</li>' }),
-      h('div', { class: 'af-cta' },
-        h('button', { class: 'btn primary', onclick: () => C.go('architecture') }, 'Continue: Architecture Explorer tour →'),
-        h('button', { class: 'btn', onclick: () => goId('start') }, '↺ Restart the course'))));
-    pDone.appendChild(h('div', { class: 'callout warn', html: 'Numbers marked ' + B('nv') + ' are NVIDIA public announcements (GB200 NVL72, Blackwell, Quantum-X / Spectrum-X Photonics). ' + B('typ') + ' are industry-typical orders of magnitude for intuition, and ' + B('est') + ' are simple model estimates. Diagrams are simplified illustrations, not floor plans or die photos.' }));
-
-    // ------------------------------------------------ step list
-    const STEPS = [{ id: 'start', page: 'start', title: 'Welcome', ch: 'Start' }]
-      .concat(LV.map((l, i) => ({ id: l.id, page: '__level', lvl: i, title: l.title, ch: 'Zoom in' })))
-      .concat([
-        { id: 'networks', page: 'networks', title: 'The four networks', ch: 'Put it together' },
-        { id: 'journey', page: 'journey', title: 'One piece of data\'s journey', ch: 'Put it together' },
-        { id: 'savings', page: 'savings', title: 'What CPO saves', ch: 'Put it together' },
-        { id: 'scale', page: 'scale', title: 'Recap: the scale of it all', ch: 'Put it together' }])
-      .concat(APX.map((a, i) => ({ id: a.id, page: a.id, title: 'Appendix ' + String.fromCharCode(65 + i) + ': ' + a.short, ch: 'Appendix' })))
-      .concat([{ id: 'done', page: 'done', title: 'Course complete', ch: 'Finish' }]);
-    const SIDX = {}; STEPS.forEach((s2, i) => { SIDX[s2.id] = i; });
-
-    const dots = STEPS.map((s2, i) => {
-      const d = h('button', { class: 'af-dot ch-' + s2.ch.replace(/\W+/g, '').toLowerCase(), title: (i + 1) + '. ' + s2.title, onclick: () => goStep(i) });
-      if (i && STEPS[i - 1].ch !== s2.ch) barTrack.appendChild(h('span', { class: 'af-gap' }));
-      barTrack.appendChild(d); return d;
-    });
-    let lastCh = '';
-    STEPS.forEach((s2, i) => {
-      if (s2.ch !== lastCh) { toc.appendChild(h('div', { class: 'af-toc-ch' }, s2.ch)); lastCh = s2.ch; }
-      toc.appendChild(h('a', { href: '#factory/' + s2.id, onclick: e => { e.preventDefault(); toc.classList.remove('open'); goStep(i); } }, (i + 1) + '. ' + s2.title));
-    });
-
-    // ------------------------------------------------ scene engine (levels)
-    let cur = -1, lvlCur = -1, scene = null, sceneG = null, anim = null, t0 = performance.now() / 1000;
-    const seen = new Set();
-
-    function camT(rect, e) {
-      if (!rect || e <= 0) return '';
-      const s2 = Math.pow(Math.min(1000 / rect.w, 600 / rect.h), e);
-      const cx = C.lerp(500, rect.x + rect.w / 2, e), cy = C.lerp(300, rect.y + rect.h / 2, e);
-      return 'translate(500 300) scale(' + s2 + ') translate(' + (-cx) + ' ' + (-cy) + ')';
-    }
-    function build(i) {
-      if (sceneG) sceneG.remove();
-      sceneG = S('g', {});
-      cam.appendChild(sceneG);
-      sceneG.appendChild(S('rect', { x: 0, y: 0, width: 1000, height: 600, fill: K.bg }));
-      const content = S('g', {}); sceneG.appendChild(content);
-      scene = LV[i].scene(content) || {};
-      t0 = performance.now() / 1000;
-      (scene.hot || []).forEach(hs => {
-        const hg = S('g', { class: 'af-hot' + (hs.go ? ' go' : ''), tabindex: 0, role: 'button', 'aria-label': hs.label });
-        hg.appendChild(S('rect', { class: 'hz', x: hs.x, y: hs.y, width: hs.w, height: hs.h, rx: 6 }));
-        const ty = hs.inside ? hs.y + 24 : hs.below || hs.y <= 40 ? hs.y + hs.h + 20 : hs.y - 8;
-        const label = hs.go ? hs.label : 'Next: ' + LV[IDX[hs.target]].name;
-        const lw = label.length * 7.4 + 24;
-        const lx = C.clamp(hs.x + hs.w / 2 - lw / 2, 4, 996 - lw);
-        hg.appendChild(S('rect', { x: lx, y: ty - 15, width: lw, height: 21, rx: 10, fill: hs.go ? '#3a1a0d' : '#1b2a10', stroke: hs.go ? K.optic : K.acc }));
-        hg.appendChild(S('text', { x: lx + lw / 2, y: ty, 'text-anchor': 'middle', 'font-size': 12.5, fill: '#fff', 'font-weight': 600 }, (hs.go ? '' : '🔍 ') + label));
-        const act = () => hs.go ? C.go(hs.go) : zoomInto(hs);
-        hg.addEventListener('click', act);
-        hg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
-        content.appendChild(hg);
-      });
-    }
-    function fillPanel(i) {
-      const l = LV[i];
-      panel.innerHTML = '';
-      panel.appendChild(h('div', { class: 'muted', style: 'font-size:12px;font-family:var(--mono)' }, 'Level ' + (i + 1) + ' of ' + LV.length + ' · ' + l.size));
-      panel.appendChild(h('h2', null, l.title));
-      panel.appendChild(h('div', { class: 'af-sub' }, l.sub));
-      panel.appendChild(h('div', { class: 'af-plain', html: '<b>In plain words:</b> ' + l.plain }));
-      panel.appendChild(h('div', { html: l.body }));
-      panel.appendChild(h('div', { class: 'af-facts', html: l.facts.map(f => '<div class="af-fact"><b>' + f[0] + '</b><span>' + f[1] + ' ' + B(f[2]) + '</span></div>').join('') }));
-      panel.appendChild(h('div', { class: 'af-cpo', html: '<h4>🔗 Connection to the CPO switch</h4><p>' + l.cpoTxt + '</p>' }));
-      panel.appendChild(h('div', { class: 'af-more', html: '<h4>A little deeper</h4><div>' + l.more + '</div>' }));
-      if (l.links.length) panel.appendChild(h('div', { class: 'af-links' }, h('span', { class: 'muted', style: 'font-size:12.5px;align-self:center' }, 'Optional detours:'), l.links.map(([href, lbl]) => h('a', { class: 'btn', href: '#' + href }, lbl + ' ↗'))));
-      C.linkify(panel);
-      panel.scrollTop = 0;
-    }
-    function showLevel(i, how) {
-      const prev = lvlCur; lvlCur = i; seen.add(i);
-      build(i); fillPanel(i);
-      scaleTag.innerHTML = 'scale ≈ <b>' + LV[i].size + '</b> across';
-      const dur = REDUCED ? 0 : 0.6;
-      if (how === 'out' && prev > i) {
-        const back = (scene.hot || []).find(x => x.target === LV[prev].id);
-        anim = back ? { from: 1, to: 0, rect: back, t: 0, dur } : { fadeIn: true, t: 0, dur: dur * 0.5 };
-      } else anim = { fadeIn: true, t: 0, dur: how === 'in' ? dur * 0.8 : dur * 0.5 };
-      applyAnim(0);
-    }
-    function applyAnim(dt) {
-      if (!anim) { cam.setAttribute('transform', ''); sceneG && sceneG.setAttribute('opacity', 1); return; }
-      anim.t += dt;
-      const k = anim.dur ? C.clamp(anim.t / anim.dur, 0, 1) : 1, e = k * k * (3 - 2 * k);
-      if (anim.fadeIn) { cam.setAttribute('transform', 'translate(500 300) scale(' + C.lerp(0.92, 1, e) + ') translate(-500 -300)'); sceneG.setAttribute('opacity', e); }
-      else { cam.setAttribute('transform', camT(anim.rect, C.lerp(anim.from, anim.to, e))); sceneG.setAttribute('opacity', anim.to === 1 ? 1 - Math.max(0, e - 0.6) * 2.5 : 1); }
-      if (k >= 1) { const done = anim.onDone; anim = null; if (done) done(); else applyAnim(0); }
-    }
-    function zoomInto(hs) {
-      if (anim && !anim.fadeIn) return;
-      const target = SIDX[hs.target];
-      anim = { from: 0, to: 1, rect: hs, t: 0, dur: REDUCED ? 0 : 0.65, onDone: () => goStep(target, 'in') };
-    }
-
-    // ------------------------------------------------ stepping
-    function goStep(k, how) {
-      k = C.clamp(k, 0, STEPS.length - 1);
-      if (k === cur) return;
-      const prev = cur; cur = k;
-      const st = STEPS[k];
-      Object.values(pages).forEach(p => p.classList.toggle('on', p === pages[st.page]));
-      if (st.page === '__level') showLevel(st.lvl, how || (prev > k ? 'out' : 'jump'));
-      btnPrev.disabled = bottomPrev.disabled = k === 0;
-      const nx = STEPS[k + 1];
-      btnNext.textContent = nx ? 'Next →' : 'Finish ✓';
-      bottomNext.textContent = nx ? 'Next: ' + nx.title + ' →' : 'Go to the Architecture Explorer →';
-      barTitle.innerHTML = '<span class="af-ch">' + st.ch + '</span> · Step ' + (k + 1) + ' of ' + STEPS.length + ' · <b>' + C.esc(st.title) + '</b>';
-      dots.forEach((d, i) => { d.classList.toggle('on', i === k); d.classList.toggle('done', i < k); });
-      try { localStorage.setItem(LAST_KEY, st.id); } catch (e) { /* private mode */ }
-      const main = document.getElementById('main');
-      if (main && prev !== -1) main.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
-      const hash = 'factory/' + st.id;
-      if (location.hash.replace(/^#\/?/, '') !== hash) C.go(hash);
-    }
-    function goId(id) { if (SIDX[id] != null) goStep(SIDX[id]); }
-    function step(d) {
-      if (d > 0 && cur === STEPS.length - 1) { C.go('architecture'); return; }
-      const st = STEPS[cur], nx = STEPS[cur + d];
-      if (d > 0 && st.page === '__level' && nx && nx.page === '__level') {
-        const hs = (scene.hot || []).find(x => x.target === nx.id);
-        if (hs && !REDUCED) { zoomInto(hs); return; }
-      }
-      goStep(cur + d, d < 0 && st.page === '__level' ? 'out' : undefined);
-    }
-    function onSub(subId) { const i = SIDX[subId] != null ? SIDX[subId] : 0; if (i !== cur) goStep(i); }
-    function onKey(e) {
-      if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
-      if (e.altKey || e.ctrlKey || e.metaKey) return;
-      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
-      else if (e.key === 'ArrowLeft' || (e.key === 'Escape' && !toc.classList.contains('open'))) { if (cur > 0) { e.preventDefault(); step(-1); } }
-      else if (e.key === 'Escape') toc.classList.remove('open');
-    }
-    document.addEventListener('keydown', onKey);
-
-    goStep(SIDX[sub] != null ? SIDX[sub] : 0);
-    live = { onSub };
-
-    const stop = C.loop((dt) => {
-      dt = Math.max(0, dt);
-      const now = performance.now() / 1000;
-      applyAnim(dt);
-      if (STEPS[cur].page === '__level' && scene && scene.update) scene.update(REDUCED ? 0 : now - t0, REDUCED ? 0 : dt);
-      if (STEPS[cur].page === 'journey') jr.update(dt);
-    });
-
-    jplay.addEventListener('click', () => { jr.auto = !jr.auto; jplay.textContent = jr.auto ? '⏸ Pause' : '▶ Play'; });
-    jr.mount(jlist, jdesc, () => { jr.auto = false; jplay.textContent = '▶ Play'; });
-
-    return () => { stop(); document.removeEventListener('keydown', onKey); apxCleanups.forEach(f => { try { f(); } catch (e) { /* ignore */ } }); live = null; };
-  }
-
   function net(col, tag, name, txt, med) {
     return '<div class="card af-net" style="--nc:' + col + '"><div class="tag">' + tag + '</div><h3>' + name + '</h3><p>' + txt + '</p><div class="med">' + med + '</div></div>';
-  }
-
-  function buildJourney(svg) {
-    const g = S('g', {}); svg.appendChild(g);
-    R(g, 20, 160, 300, 170, { fill: 'rgba(118,185,0,.05)', stroke: '#2f5a12', 'stroke-dasharray': '5 5', rx: 10 });
-    T(g, 32, 180, 'RACK A', { fill: K.acc, 'font-size': 11, 'font-weight': 700, 'letter-spacing': 2 });
-    R(g, 680, 160, 300, 170, { fill: 'rgba(118,185,0,.05)', stroke: '#2f5a12', 'stroke-dasharray': '5 5', rx: 10 });
-    T(g, 692, 180, 'RACK B', { fill: K.acc, 'font-size': 11, 'font-weight': 700, 'letter-spacing': 2 });
-    R(g, 360, 12, 280, 135, { fill: 'rgba(255,107,61,.06)', stroke: K.optic, 'stroke-dasharray': '5 5', rx: 10 });
-    T(g, 500, 168, 'CPO SWITCH FABRIC', { 'text-anchor': 'middle', fill: K.optic, 'font-size': 11, 'font-weight': 700, 'letter-spacing': 2 });
-    const segs = [];
-    for (let i = 1; i < JP.length; i++) {
-      const a = JP[i - 1], b = JP[i], optical = i >= 5 && i <= 8; // fiber segments
-      segs.push(L(g, a[0], a[1], b[0], b[1], { stroke: optical ? K.optic : K.data, 'stroke-width': 3, 'stroke-opacity': .3 }));
-    }
-    const nodes = JP.map(([x, y, lbl, k], i) => {
-      const isCpo = /CPO/.test(lbl);
-      const c = O(g, x, y, isCpo ? 16 : 11, { fill: isCpo ? '#3a1a0d' : '#0b1a20', stroke: k === 'o' ? K.optic : K.data, 'stroke-width': 2 });
-      T(g, x, y + (y < 100 ? -24 : 32), lbl, { 'text-anchor': 'middle', 'font-size': 12, fill: K.text });
-      return c;
-    });
-    const pulse = O(g, 0, 0, 7, { fill: '#fff', filter: 'drop-shadow(0 0 8px #fff)' });
-    const st = { auto: true, step: 0, tStep: 0, u: 0, list: null, desc: null };
-    function setStep(s) {
-      st.step = s; st.tStep = 0; st.u = 0;
-      const [a, b] = JS[s].r;
-      segs.forEach((l, i) => { const on = i >= a && i < b; l.setAttribute('stroke-opacity', on ? 1 : (i < a ? 0.55 : 0.18)); l.setAttribute('stroke-width', on ? 5 : 3); });
-      nodes.forEach((n, i) => n.setAttribute('filter', i >= a && i <= b ? 'drop-shadow(0 0 8px ' + (JP[i][3] === 'o' ? '#ff6b3d' : '#22d3ee') + ')' : ''));
-      if (st.list) [...st.list.children].forEach((li, i) => li.classList.toggle('on', i === s));
-      if (st.desc) { st.desc.innerHTML = '<b>Step ' + (s + 1) + ' · ' + JS[s].t + '.</b> ' + JS[s].d; C.linkify(st.desc); }
-    }
-    st.mount = (list, desc, onManual) => {
-      st.list = list; st.desc = desc;
-      JS.forEach((s, i) => list.appendChild(h('li', { onclick: () => { onManual(); setStep(i); } }, h('span', { class: 'n' }, String(i + 1)), h('span', { html: '<b>' + s.t + '</b>' }))));
-      setStep(0);
-    };
-    st.update = (dt) => {
-      if (REDUCED) dt = 0;
-      st.tStep += dt;
-      if (st.auto && st.tStep > 4.5) setStep((st.step + 1) % JS.length);
-      const [a, b] = JS[st.step].r;
-      const pts = JP.slice(a, b + 1).map(p => [p[0], p[1]]);
-      if (pts.length < 2) { pulse.setAttribute('cx', pts[0][0]); pulse.setAttribute('cy', pts[0][1]); pulse.setAttribute('r', 7 + 4 * Math.abs(Math.sin(st.tStep * 5))); return; }
-      st.u = Math.min(1, st.u + dt / Math.max(1, (b - a)) * 0.6);
-      const p = along(pts, st.u >= 1 ? 0.9999 : st.u);
-      pulse.setAttribute('r', 7);
-      pulse.setAttribute('cx', p[0]); pulse.setAttribute('cy', p[1]);
-      if (st.u >= 1) st.u = 0;
-    };
-    return st;
   }
 
   function buildCalc() {
@@ -1095,14 +735,98 @@
         'Every extra tier adds another full set of ' + num(N) + ' links, which is why <b>high-radix switches</b> (more ports, fewer tiers) and <b>cheaper, cooler optics per port</b> (CPO) both matter so much. Fewer lasers and connectors per link also means fewer link flaps that stall the whole job ' + B('nv') + ' 10× resiliency claim.';
     }
     function fact(v, l, tag) { return '<div class="af-fact"><b>' + v + '</b><span>' + l + ' ' + B(tag) + '</span></div>'; }
-    function bar(l, v, max, col, txt) { return '<div class="af-bar"><span>' + l + '</span><div class="tr"><i style="width:' + (100 * v / max).toFixed(1) + '%;background:' + col + '"></i></div><output>' + txt + '</output></div>'; }
+    function bar(l, v, max, col, txt) { return '<div class="af-hbar"><span>' + l + '</span><div class="tr"><i style="width:' + (100 * v / max).toFixed(1) + '%;background:' + col + '"></i></div><output>' + txt + '</output></div>'; }
     inN.addEventListener('input', upd); inP.addEventListener('input', upd);
     upd();
     return { el };
   }
 
-  C.registerSection({
-    id: 'factory', title: 'AI Factory Course', icon: '🏭', order: 8, render,
-    onSubRoute(sub) { if (live) live.onSub(sub); }
+  // ---------------------------------------------------------------- course definition
+  const madeOf = ['racks, power, cooling, network', 'leaf & spine CPO switches, fiber', 'trays, NVLink switches, copper spine', 'GPUs, CPUs, NICs', '2 dies + 8 HBM stacks', '~100+ SMs, cache, SerDes', '4 Tensor Cores, 128 CUDA cores', 'arrays of multiply-adders', 'logic gates', 'transistor pairs', 'silicon, atoms, electrons'];
+  const talk = ['long-haul fiber (scale-across)', 'fiber + CPO optical engines', 'copper NVLink + fiber out', 'NVLink, PCIe, cold-plate plumbing', 'NV-HBI 10 TB/s, interposer wires', 'on-chip wires, L2 cache', 'registers, shared memory', 'wires a few µm long', 'wires < 1 µm', 'metal layers', 'the electric field of the gate'];
+
+  C.course.register({
+    id: 'factory', title: 'AI Factory Course', icon: '🏭', order: 8, storeKey: 'af-last-step',
+    levels: LV, levelCh: 'Zoom in', levelBoxTitle: '🔗 Connection to the CPO switch',
+    finish: { go: 'cpo-course', label: 'Continue: the CPO Switch Course →' },
+    pages: [
+      { id: 'start', title: 'Welcome', ch: 'Start', build(p, ctx) {
+        p.appendChild(h('div', { class: 'af-hero' },
+          h('div', { class: 'af-eyebrow' }, 'Guided course · about 30–45 minutes'),
+          h('h1', { html: 'Inside an <em>AI factory</em>: from the building to the transistor' }),
+          h('p', { html: 'You don\'t need to choose anything: just press <b>Next</b>. The course zooms through <b>11 levels</b>, from a gigawatt building down to one 50 nm transistor, then puts it all together, and ends with an <b>appendix</b> that goes deeper. At every stop you\'ll see how it connects to the <b style="color:var(--optic)">co-packaged optics (CPO) switches</b>.' }),
+          h('div', { class: 'af-analogy', html:
+            '<div><span>🏭</span><b>Factory</b>power and cooling in, tokens out</div>' +
+            '<div><span>🛣️</span><b>Road network</b>leaf & spine CPO switches connect every rack</div>' +
+            '<div><span>👷</span><b>Workers</b>GPUs, each with thousands of calculators</div>' +
+            '<div><span>💡</span><b>Light switches</b>transistors, 208 billion per GPU</div>' }),
+          h('div', { class: 'af-cta' },
+            h('button', { class: 'btn primary af-bignext', onclick: () => ctx.next() }, 'Start the course →'),
+            ctx.resumeId && ctx.resumeId !== 'start' && ctx.resumeId !== 'done' ? h('button', { class: 'btn', onclick: () => ctx.goId(ctx.resumeId) }, 'Resume where you left off') : null)));
+        p.appendChild(h('div', { class: 'card', html: '<h3 style="margin-top:0">The route</h3><ol class="af-route">' +
+          '<li><b>Zoom in, 11 steps:</b> AI factory → network topology → rack → compute tray → GPU package → die → SM → Tensor Core → logic gates → CMOS → transistor.</li>' +
+          '<li><b>Put it together, 4 steps:</b> the four networks, one piece of data\'s journey through light and copper, what CPO saves at factory scale, and a recap of the sizes.</li>' +
+          '<li><b>Appendix, 4 chapters:</b> the AI factory in depth, network topologies in depth, how GPUs work, and how training and inference use the network.</li></ol>' +
+          '<p class="muted" style="margin:0">Each level shows a diagram (it animates; the scene zooms into the next level when you press Next), a box <b style="color:var(--accent)">"In plain words"</b>, key numbers, and an orange box <b style="color:var(--optic)">"Connection to the CPO switch"</b>. When you finish, the <b>CPO Switch Course</b> goes inside the switch itself.</p>' }));
+      } },
+      '@levels',
+      { id: 'networks', title: 'The four networks', ch: 'Put it together', build(p) {
+        p.appendChild(h('h2', { class: 'af-ph' }, 'The four networks of an AI factory'));
+        p.appendChild(h('p', { class: 'h-sub' }, 'You have now seen every level. Zoom back out: an AI factory actually has several separate networks, each built for a different job. CPO switches live in the scale-out network, which has by far the most optical links.'));
+        p.appendChild(h('div', { class: 'af-nets', html:
+          net('var(--accent)', 'Scale-up', 'NVLink', 'Inside the rack. Lets 72 GPUs share memory and act as one. Extremely fast, very short reach.', 'copper · ≤ ~2 m · 1.8 TB/s per GPU ' + B('nv')) +
+          net('var(--optic)', 'Scale-out ★ CPO lives here', 'Compute fabric', 'Between racks. Every GPU gets its own 800G port into a leaf/spine fat tree. InfiniBand (Quantum-X Photonics) or Ethernet (Spectrum-X Photonics).', 'fiber · 10 m – 1 km+ · 800 Gb/s per GPU ' + B('nv')) +
+          net('var(--data)', 'Front-end', 'Storage & users', 'Loads training data, saves checkpoints, carries user requests and answers. Uses BlueField DPUs over Ethernet.', 'fiber / copper · 100–400 Gb/s ' + B('typ')) +
+          net('var(--ctrl)', 'Management', 'Out-of-band', 'A small, separate, very reliable network for BMCs, telemetry, firmware updates, power and cooling control.', 'copper · 1–10 Gb/s ' + B('typ')) }));
+        p.appendChild(h('div', { class: 'callout', html: '<b>And beyond the building:</b> "scale-across" links join several AI factories over long-haul fiber, so a single job can span sites. Those use long-reach coherent optics rather than CPO.' }));
+      } },
+      { id: 'journey', title: 'One piece of data\'s journey', ch: 'Put it together', build(p, ctx) {
+        p.appendChild(h('h2', { class: 'af-ph' }, 'Follow one piece of data: transistor → light → transistor'));
+        p.appendChild(h('p', { class: 'h-sub' }, 'One result travels from a GPU to a GPU in another rack. The animation steps through it by itself; watch where it is electricity (cyan) and where it is light (orange), and where the CPO switches sit.'));
+        ctx.onFrame(C.course.journeyBlock(p, {
+          pts: JP, steps: JS, optical: i => i >= 5 && i <= 8, big: l => /CPO/.test(l),
+          decorate(g) {
+            R(g, 20, 160, 300, 170, { fill: 'rgba(118,185,0,.05)', stroke: '#2f5a12', 'stroke-dasharray': '5 5', rx: 10 });
+            T(g, 32, 180, 'RACK A', { fill: K.acc, 'font-size': 11, 'font-weight': 700, 'letter-spacing': 2 });
+            R(g, 680, 160, 300, 170, { fill: 'rgba(118,185,0,.05)', stroke: '#2f5a12', 'stroke-dasharray': '5 5', rx: 10 });
+            T(g, 692, 180, 'RACK B', { fill: K.acc, 'font-size': 11, 'font-weight': 700, 'letter-spacing': 2 });
+            R(g, 360, 12, 280, 135, { fill: 'rgba(255,107,61,.06)', stroke: K.optic, 'stroke-dasharray': '5 5', rx: 10 });
+            T(g, 500, 168, 'CPO SWITCH FABRIC', { 'text-anchor': 'middle', fill: K.optic, 'font-size': 11, 'font-weight': 700, 'letter-spacing': 2 });
+          }
+        }));
+      } },
+      { id: 'savings', title: 'What CPO saves', ch: 'Put it together', build(p) {
+        p.appendChild(h('h2', { class: 'af-ph' }, 'What CPO switches save at factory scale'));
+        p.appendChild(h('p', { class: 'h-sub' }, 'Drag the GPU slider. The calculator builds a non-blocking fat tree, counts the optical links, and compares switches with pluggable transceivers against CPO switches.'));
+        p.appendChild(buildCalc().el);
+      } },
+      { id: 'scale', title: 'Recap: the scale of it all', ch: 'Put it together', build(p, ctx) {
+        p.appendChild(h('h2', { class: 'af-ph' }, 'Recap: the scale of it all'));
+        const tb = h('table', { class: 'table af-pow' });
+        tb.innerHTML = '<tr><th>Size</th><th>Level</th><th>Made of</th><th>Talks to its neighbours with</th></tr>';
+        LV.forEach((l, i) => tb.appendChild(h('tr', { onclick: () => ctx.goId(l.id) },
+          h('td', null, l.size), h('td', null, h('b', null, l.name)), h('td', { class: 'muted' }, madeOf[i]), h('td', { class: 'muted' }, talk[i]))));
+        p.appendChild(h('div', { class: 'card' }, tb, h('p', { class: 'muted', style: 'margin:8px 0 0;font-size:13px' }, 'From ~500 m to ~50 nm is a zoom of about 10,000,000,000× (10¹⁰). Click a row to revisit that level.')));
+        p.appendChild(h('div', { class: 'af-plain', html: '<b>The one idea to keep:</b> at every level, <b>moving data costs more energy and time than computing on it</b>. HBM sits next to the GPU die, NVLink keeps 72 GPUs on copper, and CPO puts the optics next to the switch die, all for the same reason: shorter electrical paths, fewer conversions, less energy per bit.' }));
+        p.appendChild(h('div', { class: 'callout', html: 'Next comes the <b>appendix</b>: four chapters that go deeper into the AI factory, network topologies, GPUs, and how AI jobs use the network. Keep pressing Next.' }));
+      } }
+    ].concat(C.course.appendixPages(C.factoryAppendix)).concat([
+      { id: 'done', title: 'Course complete', ch: 'Finish', build(p, ctx) {
+        p.appendChild(h('div', { class: 'af-hero' },
+          h('div', { class: 'af-eyebrow' }, 'Course complete'),
+          h('h1', { html: 'You went from a <em>gigawatt</em> to a <em>transistor</em>' }),
+          h('ul', { class: 'af-takeaways', html:
+            '<li>An AI factory turns <b>power into tokens</b>; its output is limited by power, cooling and how fast GPUs can talk.</li>' +
+            '<li>Inside a rack GPUs talk over <b>copper NVLink</b>; between racks they talk over <b>fiber</b> through a <b>leaf/spine fat tree</b>.</li>' +
+            '<li>Training stops at the <b>slowest message</b>: one bad link stalls thousands of GPUs, so network reliability is critical.</li>' +
+            '<li>A GPU is <b>two dies + HBM</b>; each die is a grid of <b>SMs</b>; each SM has <b>Tensor Cores</b> that do matrix math made of gates made of transistors.</li>' +
+            '<li><b>Moving bits costs far more energy than computing on them</b>: femtojoules per gate flip vs ~15–20 pJ per bit through a pluggable optic.</li>' +
+            '<li><b>CPO switches</b> put the optics in the switch package: ~3.5× better power efficiency, 4× fewer lasers, 10× better resiliency ' + B('nv') + '.</li>' }),
+          h('div', { class: 'af-cta' },
+            h('button', { class: 'btn primary', onclick: () => C.go('cpo-course') }, 'Continue: the CPO Switch Course →'),
+            h('button', { class: 'btn', onclick: () => ctx.goId('start') }, '↺ Restart the course'))));
+        p.appendChild(h('div', { class: 'callout warn', html: 'Numbers marked ' + B('nv') + ' are NVIDIA public announcements (GB200 NVL72, Blackwell, Quantum-X / Spectrum-X Photonics). ' + B('typ') + ' are industry-typical orders of magnitude for intuition, and ' + B('est') + ' are simple model estimates. Diagrams are simplified illustrations, not floor plans or die photos.' }));
+      } }
+    ])
   });
 })();

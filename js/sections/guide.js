@@ -32,6 +32,10 @@
         'The progress bar at the top shows where you are; <b>☰ Contents</b> lets you jump. Your place is remembered, so you can resume later.',
         'Read the <b>"In plain words"</b> box first, then the orange <b>"Connection to the CPO switch"</b> box.',
         'In the gate, CMOS and transistor levels you can <b>click the inputs or the gate</b> to flip them yourself. The appendix has small calculators to play with.'] },
+    { id: 'cpo-course', ico: '🔆', t: 'CPO Switch Course', what: 'The same kind of guided Next, Next course, but inside the CPO switch and written for a new system engineer. 12 levels: the switch in the network, why CPO, the switch box, package, ASIC, SerDes/PAM4, optical engine, external laser, ring modulator, ring lock, WDM & fiber, receiver. Then it puts it together: one bit across the link, an interactive link budget and power budget, control loops & telemetry, and what the system-engineering job involves. Ends with a 5-chapter appendix: photonics basics, signal integrity & FEC, packaging/power/thermal, reliability/test/bring-up, and a day-1 cheat sheet.',
+      how: ['Press <b>Next →</b> (or <span class="gd-kbd">→</span>) from start to finish; diagrams zoom into the next level by themselves.',
+        'Each level\'s orange box, <b>"What this means for you as system engineer"</b>, connects the physics to the budgets, interfaces and trade-offs you will own.',
+        'Drag the sliders on the <b>link budget</b> and <b>power budget</b> steps: try to make the link fail, then fix it.'] },
     { id: 'architecture', ico: '🔬', t: 'Architecture Explorer', what: 'The centerpiece: a zoomable map of the whole system, 67 levels deep, from the AI-factory network down to transistors, ring resonators and laser quantum wells.',
       how: ['<b>Guided tour:</b> press <b>Next ▶</b> (or <span class="gd-kbd">→</span>) to visit every block in order, from the system down to the deepest physics; <b>◀ Prev</b> / <span class="gd-kbd">←</span> goes back.',
         'Or explore freely: <b>click a glowing region</b> in the diagram to zoom into that block. Hover a region to see its label.',
@@ -88,7 +92,7 @@
         C.h('h3', { style: 'margin-top:0' }, 'Quick start'),
         C.h('ol', { class: 'gd-steps', html:
           '<li>Use the <b>left menu</b> to switch sections. On narrow screens it shrinks to icons.</li>' +
-          '<li>Start with the <b>AI Factory Course</b> and just press <b>Next</b> until the end, then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
+          '<li>Start with the <b>AI Factory Course</b>, then the <b>CPO Switch Course</b>: just press <b>Next</b> until the end of each. Then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
           '<li>Use <b>Next ▶</b> / the <span class="gd-kbd">→</span> key to move step by step; you never have to choose where to click.</li>' +
           '<li><b>Hover any dotted-underlined abbreviation</b> (e.g. ' + C.tip('MRM') + ') for its definition. <span class="gd-kbd">Alt</span>+click opens it in the Glossary.</li>' +
           '<li>Move the <b>sliders</b> in the Simulator, Noise Lab and Budgets and watch everything update live.</li>' })),
