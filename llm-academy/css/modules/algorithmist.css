@@ -109,8 +109,8 @@
 .alg-psi-grid .slider { grid-template-columns: 50px 1fr 44px; }
 .alg-psi-bars { margin: 12px 0; }
 .alg-psi-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: center; margin: 4px 0; font-size: 13.5px; }
-.alg-psi-row > div { display: flex; flex-direction: column; gap: 2px; direction: ltr; }
-.alg-psi-row i { display: block; height: 8px; border-radius: 0 4px 4px 0; }
+.alg-psi-row > div { display: flex; flex-direction: column; gap: 2px; }
+.alg-psi-row i { display: block; height: 8px; border-radius: 4px 0 0 4px; }
 .alg-psi-row i.b { background: #94a3b8; } .alg-psi-row i.c { background: #f59e0b; }
 
 /* trace waterfall */

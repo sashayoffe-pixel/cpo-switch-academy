@@ -194,7 +194,7 @@
       { id: 'ids', x: 450, y: 515, w: 170, label: 'מזהי טוקנים', sub: '[1532, 87, 9921, …]', color: 'data', info: '<p>הקלט של הרשת הוא <b>רק מספרים שלמים</b> — אינדקסים לאוצר המילים (vocab) בגודל V ≈ 100k–260k טיפוסית. הרשת אף פעם לא רואה "אותיות".</p>' },
       { id: 'emb', x: 450, y: 425, w: 170, label: 'Embedding', sub: 'טבלה V × d', color: 'llm', info: '<p>מטריצה <code>E</code> בגודל <code>V × d</code>; כל מזהה בוחר <b>שורה</b> — וקטור של d מספרים. דוגמה: 128,256 × 4,096 ≈ <b>525M</b> פרמטרים.</p><p>הווקטורים נלמדים: טוקנים בעלי שימוש דומה מסתיימים קרובים במרחב. זה לא "embedding model" לחיפוש (ראו סעיף Embeddings) — אבל אותו רעיון.</p>' },
       { id: 'pos', x: 760, y: 330, w: 170, label: 'מידע מיקום', sub: 'RoPE בתוך Q,K', color: 'ctrl', info: '<p>Attention עצמו "עיוור לסדר" — הוא רואה קבוצה, לא רצף. צריך להזריק מיקום:</p><ul><li><b>RoPE</b> (Rotary, הנפוץ היום): מסובבים את Q ו-K בזווית שתלויה במיקום. התוצאה: המכפלה q·k תלויה ב<b>מרחק היחסי</b>.</li><li>ישן יותר: וקטור מיקום נלמד/סינוסי שמתווסף ל-embedding (GPT-2, Transformer המקורי).</li></ul><p>הארכת חלון ההקשר (למשל מ-8k ל-128k+) נעשית בין השאר ע״י שינוי סקאלת הזוויות של RoPE ואימון המשך.</p>' },
-      { id: 'blocks', x: 450, y: 330, w: 250, h: 66, label: 'N × בלוק Decoder', sub: 'טיפוסי: 32–120+ שכבות', color: 'llm', info: '<p>אותו מבנה חוזר N פעמים, עם משקלים שונים בכל שכבה. כאן נמצאים כמעט כל הפרמטרים.</p><ul><li>מודל ~8B: 32 שכבות, d=4096</li><li>מודל ~70B: 80 שכבות, d=8192</li><li>מודלי חזית: עשרות עד 100+ שכבות, d של אלפים רבים, לעתים MoE עם מאות מיליארדי פרמטרים.</li></ul><p>כלל אצבע למודל צפוף: <code>P ≈ 12 · L · d²</code> (+ embeddings). ל-32 שכבות ו-d=4096: ≈ 6.4B.</p><p>צללו פנימה לבלוק אחד.</p>', children: BLOCK_SPEC },
+      { id: 'blocks', x: 450, y: 330, w: 250, h: 66, label: 'בלוקי Decoder × N', sub: 'טיפוסי: 32–120+ שכבות', color: 'llm', info: '<p>אותו מבנה חוזר N פעמים, עם משקלים שונים בכל שכבה. כאן נמצאים כמעט כל הפרמטרים.</p><ul><li>מודל ~8B: 32 שכבות, d=4096</li><li>מודל ~70B: 80 שכבות, d=8192</li><li>מודלי חזית: עשרות עד 100+ שכבות, d של אלפים רבים, לעתים MoE עם מאות מיליארדי פרמטרים.</li></ul><p>כלל אצבע למודל צפוף: <code>P ≈ 12 · L · d²</code> (+ embeddings). ל-32 שכבות ו-d=4096: ≈ 6.4B.</p><p>צללו פנימה לבלוק אחד.</p>', children: BLOCK_SPEC },
       { id: 'norm', x: 450, y: 235, w: 170, label: 'RMSNorm סופי', color: 'ext', info: '<p>נרמול אחרון על ה-residual stream לפני ההקרנה לאוצר המילים.</p>' },
       { id: 'head', x: 450, y: 145, w: 170, label: 'LM Head', sub: 'unembedding d × V', color: 'llm', info: '<p>כפל מטריצה <code>logits = h · W_U</code> שממפה את וקטור המיקום <b>האחרון</b> (d מספרים) ל-<b>V ציונים</b> — logit אחד לכל טוקן אפשרי.</p><p>במודלים קטנים מרבים "לקשור" (weight tying) את W_U למטריצת ה-Embedding כדי לחסוך פרמטרים.</p>' },
       { id: 'softmax', x: 250, y: 60, w: 150, label: 'Softmax', sub: 'logits → p', color: 'ctrl', info: '<p class="mono">pᵢ = exp(zᵢ / T) / Σⱼ exp(zⱼ / T)</p><p>הופך ציונים להתפלגות הסתברות. <code>T</code> (temperature) מחדד/משטח אותה — ראו מעבדת הדגימה.</p>' },
@@ -216,18 +216,18 @@
     width: 900, height: 400,
     intro: '<p><b>בתוך שרת ההסקה.</b> שלושה חלקים עיקריים: <b>Tokenizer</b> (טקסט ↔ מספרים, דטרמיניסטי), <b>המודל</b> (רשת הנוירונים — כאן הכסף והחישוב), ו-<b>Sampler</b> (בחירת טוקן). מסביבם: scheduler שמאחד בקשות של משתמשים רבים, ו-KV cache.</p>',
     nodes: [
-      { id: 'in', x: 820, y: 190, w: 130, label: 'פרומפט מלא', sub: 'system + היסטוריה', color: 'data', info: '<p>ההודעות (system, user, assistant, תוצאות כלים) מרונדרות לטקסט אחד לפי <b>chat template</b> עם טוקנים מיוחדים שמסמנים "כאן מתחיל תור המשתמש" וכו׳. המודל לא יודע מה זה "הודעה" — הוא רואה רצף טוקנים אחד ארוך.</p>' },
-      { id: 'tok', x: 650, y: 190, w: 140, label: 'Tokenizer', sub: 'טקסט → מזהים', color: 'tool', info: '<p>אלגוריתם <b>דטרמיניסטי</b> (לא נוירוני) — בדרך כלל byte-level BPE: מתחילים מבייטים ומיזוגים שנלמדו מקורפוס. אוצר מילים טיפוסי: 100k–260k.</p><p>השלכות: עלות, אורך הקשר, ובעיות מוכרות (ספירת אותיות, חשבון עם מספרים ארוכים). <b>עברית</b> בדרך כלל עולה יותר טוקנים לאותו תוכן. ראו מעבדת הטוקנייזר.</p>' },
-      { id: 'model', x: 440, y: 190, w: 170, h: 64, label: 'Transformer', sub: 'מיליארדי פרמטרים', color: 'llm', info: '<p>רשת הנוירונים. מקבלת T מזהים, מחזירה <b>logits</b> לטוקן הבא. רצה על מאיצים (GPU/TPU/Trainium), המשקלים מפוצלים בין כמה שבבים (tensor/pipeline parallelism).</p><p>שני מצבי עבודה:</p><ul><li><b>Prefill</b> — כל הפרומפט במקביל; חסום-חישוב (compute-bound); קובע את זמן התגובה הראשונה (TTFT).</li><li><b>Decode</b> — טוקן אחד בכל צעד; חסום-רוחב-פס-זיכרון; קובע את קצב הזרימה.</li></ul><p>צללו פנימה לארכיטקטורה.</p>', children: TRANSFORMER_SPEC },
-      { id: 'sampler', x: 230, y: 190, w: 140, label: 'Sampler', sub: 'logits → טוקן', color: 'ctrl', info: '<p>מקבל וקטור logits באורך V ובוחר טוקן: greedy, temperature, top-k, top-p, וגם בדיקות עצירה — טוקן סיום (EOS), <code>max_tokens</code>, stop sequences. כאן גם נאכפים <b>structured outputs</b> (מסכת טוקנים שאינם תואמים לסכמה).</p>' },
-      { id: 'detok', x: 80, y: 190, w: 130, label: 'Detokenizer', sub: 'מזהה → טקסט', color: 'tool', info: '<p>ממיר מזהה חזרה לבייטים ולטקסט וזורם ללקוח (streaming). אות עברית היא 2 בייטים ב-UTF-8 — טוקן יכול להסתיים באמצע תו, ולכן השרת מחזיק בייטים עד שתו שלם מוכן.</p>' },
-      { id: 'kv', x: 440, y: 335, w: 150, h: 64, shape: 'db', label: 'KV cache', sub: 'לכל רצף', color: 'store', info: '<p>זיכרון ה-K וה-V של כל הטוקנים הקודמים, בכל השכבות. מאפשר ל-decode לחשב רק את הטוקן החדש. מנוהל בדפים (PagedAttention) כדי לשרת אלפי רצפים במקביל. <b>Prompt caching</b> ב-API שומר את הקידומת הזו בין בקשות.</p>' },
-      { id: 'sched', x: 650, y: 55, w: 170, label: 'Scheduler', sub: 'continuous batching', color: 'ext', info: '<p>מאחד בקשות של משתמשים רבים לאותו forward pass כדי לנצל את ה-GPU. בקשות נכנסות ויוצאות מה-batch בכל צעד.</p><p>תופעת לוואי: סדר פעולות נקודה-צפה תלוי ב-batch — אחד המקורות ל<b>אי-דטרמיניזם</b> גם כשהדגימה "חמדנית".</p>' }
+      { id: 'in', x: 830, y: 190, w: 120, label: 'פרומפט מלא', sub: 'system + היסטוריה', color: 'data', info: '<p>ההודעות (system, user, assistant, תוצאות כלים) מרונדרות לטקסט אחד לפי <b>chat template</b> עם טוקנים מיוחדים שמסמנים "כאן מתחיל תור המשתמש" וכו׳. המודל לא יודע מה זה "הודעה" — הוא רואה רצף טוקנים אחד ארוך.</p>' },
+      { id: 'tok', x: 670, y: 190, w: 130, label: 'Tokenizer', sub: 'טקסט → מזהים', color: 'tool', info: '<p>אלגוריתם <b>דטרמיניסטי</b> (לא נוירוני) — בדרך כלל byte-level BPE: מתחילים מבייטים ומיזוגים שנלמדו מקורפוס. אוצר מילים טיפוסי: 100k–260k.</p><p>השלכות: עלות, אורך הקשר, ובעיות מוכרות (ספירת אותיות, חשבון עם מספרים ארוכים). <b>עברית</b> בדרך כלל עולה יותר טוקנים לאותו תוכן. ראו מעבדת הטוקנייזר.</p>' },
+      { id: 'model', x: 470, y: 190, w: 160, h: 64, label: 'Transformer', sub: 'מיליארדי פרמטרים', color: 'llm', info: '<p>רשת הנוירונים. מקבלת T מזהים, מחזירה <b>logits</b> לטוקן הבא. רצה על מאיצים (GPU/TPU/Trainium), המשקלים מפוצלים בין כמה שבבים (tensor/pipeline parallelism).</p><p>שני מצבי עבודה:</p><ul><li><b>Prefill</b> — כל הפרומפט במקביל; חסום-חישוב (compute-bound); קובע את זמן התגובה הראשונה (TTFT).</li><li><b>Decode</b> — טוקן אחד בכל צעד; חסום-רוחב-פס-זיכרון; קובע את קצב הזרימה.</li></ul><p>צללו פנימה לארכיטקטורה.</p>', children: TRANSFORMER_SPEC },
+      { id: 'sampler', x: 275, y: 190, w: 130, label: 'Sampler', sub: 'logits → טוקן', color: 'ctrl', info: '<p>מקבל וקטור logits באורך V ובוחר טוקן: greedy, temperature, top-k, top-p, וגם בדיקות עצירה — טוקן סיום (EOS), <code>max_tokens</code>, stop sequences. כאן גם נאכפים <b>structured outputs</b> (מסכת טוקנים שאינם תואמים לסכמה).</p>' },
+      { id: 'detok', x: 95, y: 190, w: 130, label: 'Detokenizer', sub: 'מזהה → טקסט', color: 'tool', info: '<p>ממיר מזהה חזרה לבייטים ולטקסט וזורם ללקוח (streaming). אות עברית היא 2 בייטים ב-UTF-8 — טוקן יכול להסתיים באמצע תו, ולכן השרת מחזיק בייטים עד שתו שלם מוכן.</p>' },
+      { id: 'kv', x: 470, y: 335, w: 150, h: 64, shape: 'db', label: 'KV cache', sub: 'לכל רצף', color: 'store', info: '<p>זיכרון ה-K וה-V של כל הטוקנים הקודמים, בכל השכבות. מאפשר ל-decode לחשב רק את הטוקן החדש. מנוהל בדפים (PagedAttention) כדי לשרת אלפי רצפים במקביל. <b>Prompt caching</b> ב-API שומר את הקידומת הזו בין בקשות.</p>' },
+      { id: 'sched', x: 470, y: 55, w: 170, label: 'Scheduler', sub: 'continuous batching', color: 'ext', info: '<p>מאחד בקשות של משתמשים רבים לאותו forward pass כדי לנצל את ה-GPU. בקשות נכנסות ויוצאות מה-batch בכל צעד.</p><p>תופעת לוואי: סדר פעולות נקודה-צפה תלוי ב-batch — אחד המקורות ל<b>אי-דטרמיניזם</b> גם כשהדגימה "חמדנית".</p>' }
     ],
     edges: [
       { from: 'in', to: 'tok' }, { from: 'tok', to: 'model', label: 'ids' }, { from: 'model', to: 'sampler', label: 'logits' },
       { from: 'sampler', to: 'detok', label: 'id' },
-      { from: 'sampler', to: 'model', bend: 70, dashed: true, color: 'neuron', label: 'הטוקן החדש חוזר לקלט' },
+      { from: 'sampler', to: 'model', bend: 140, dashed: true, color: 'neuron', label: 'חוזר לקלט' },
       { from: 'model', to: 'kv', both: true, color: 'store' },
       { from: 'sched', to: 'model', dashed: true }
     ]
@@ -237,15 +237,15 @@
     title: 'מוצר LLM', width: 900, height: 330,
     intro: '<p><b>רמה 0 — המוצר.</b> כשמשתמש מקליד שאלה בצ׳אט, ההודעה עוברת דרך האפליקציה וה-API אל שרת הסקה, ושם — רשת נוירונים. לחצו על רכיב; רכיב עם <b class="dive-ic">⤵</b> אפשר לפתוח. הנתיב המלא: מוצר ← שרת ← Transformer ← בלוק ← Attention / MLP ← <b>נוירון</b>.</p>',
     nodes: [
-      { id: 'user', x: 825, y: 120, w: 120, label: 'משתמש', sub: 'שואל שאלה', color: 'ui', icon: '👤', info: '<p>"חשבון החשמל שלי גבוה פי 2 מהרגיל, למה?" — מבחינת המודל, זה רק רצף של כ-15–25 טוקנים.</p>' },
-      { id: 'app', x: 640, y: 120, w: 160, label: 'אפליקציית צ׳אט', sub: 'UI + היסטוריה', color: 'ui', info: '<p>שומרת את היסטוריית השיחה, מוסיפה system prompt, כלים ומסמכים (RAG), ומציגה את התשובה בזרימה.</p><p><b>חשוב:</b> ה-API הוא <b>חסר-מצב</b> (stateless) — בכל תור האפליקציה שולחת מחדש את כל ההיסטוריה. לכן שיחה ארוכה = יותר טוקני קלט = יותר כסף. ראו <a href="#/chat">ממשקי צ׳אט</a>.</p>' },
-      { id: 'api', x: 455, y: 120, w: 140, label: 'API', sub: 'auth · limits', color: 'ext', info: '<p>נקודת קצה HTTPS (אצל Anthropic: <code>POST /v1/messages</code>). אחראית על אימות מפתח, rate limits, ניתוב לשרת עם המודל המבוקש, ספירת טוקנים לחיוב, והחזרת התשובה בזרם (SSE).</p><p>התשובה כוללת <code>usage</code> — <code>input_tokens</code> ו-<code>output_tokens</code> — הבסיס לכל חישוב עלות.</p>' },
+      { id: 'user', x: 835, y: 120, w: 110, label: 'משתמש', sub: 'שואל שאלה', color: 'ui', icon: '👤', info: '<p>"חשבון החשמל שלי גבוה פי 2 מהרגיל, למה?" — מבחינת המודל, זה רק רצף של כ-15–25 טוקנים.</p>' },
+      { id: 'app', x: 660, y: 120, w: 140, label: 'אפליקציית צ׳אט', sub: 'UI + היסטוריה', color: 'ui', info: '<p>שומרת את היסטוריית השיחה, מוסיפה system prompt, כלים ומסמכים (RAG), ומציגה את התשובה בזרימה.</p><p><b>חשוב:</b> ה-API הוא <b>חסר-מצב</b> (stateless) — בכל תור האפליקציה שולחת מחדש את כל ההיסטוריה. לכן שיחה ארוכה = יותר טוקני קלט = יותר כסף. ראו <a href="#/chat">ממשקי צ׳אט</a>.</p>' },
+      { id: 'api', x: 480, y: 120, w: 110, label: 'API', sub: 'auth · limits', color: 'ext', info: '<p>נקודת קצה HTTPS (אצל Anthropic: <code>POST /v1/messages</code>). אחראית על אימות מפתח, rate limits, ניתוב לשרת עם המודל המבוקש, ספירת טוקנים לחיוב, והחזרת התשובה בזרם (SSE).</p><p>התשובה כוללת <code>usage</code> — <code>input_tokens</code> ו-<code>output_tokens</code> — הבסיס לכל חישוב עלות.</p>' },
       { id: 'llm', x: 245, y: 120, w: 190, h: 64, label: 'שרת הסקה (LLM)', sub: 'inference server', color: 'llm', info: '<p>אשכול מאיצים שמחזיק את משקלי המודל בזיכרון ומריץ את הרשת. בתוכו: tokenizer, המודל, sampler, ו-KV cache.</p><p>צללו פנימה — מכאן מתחיל המסע אל הנוירון.</p>', children: SERVER_SPEC },
-      { id: 'kb', x: 640, y: 260, w: 160, label: 'כלים ומסמכים', sub: 'RAG · tools', color: 'store', shape: 'db', h: 64, info: '<p>המודל לא "מחובר לאינטרנט" ולא "זוכר" את המסמכים שלכם. האפליקציה (או לולאת סוכן) מאחזרת מידע ומוסיפה אותו <b>לחלון ההקשר</b>. ראו <a href="#/rag">RAG</a> ו-<a href="#/agents">סוכנים</a>.</p>' },
+      { id: 'kb', x: 660, y: 260, w: 160, label: 'כלים ומסמכים', sub: 'RAG · tools', color: 'store', shape: 'db', h: 64, info: '<p>המודל לא "מחובר לאינטרנט" ולא "זוכר" את המסמכים שלכם. האפליקציה (או לולאת סוכן) מאחזרת מידע ומוסיפה אותו <b>לחלון ההקשר</b>. ראו <a href="#/rag">RAG</a> ו-<a href="#/agents">סוכנים</a>.</p>' },
       { id: 'out', x: 80, y: 260, w: 130, label: 'תשובה', sub: 'טוקן אחר טוקן', color: 'ok', info: '<p>התשובה נוצרת טוקן-טוקן וזורמת חזרה דרך ה-API לאפליקציה. לכן רואים את הטקסט "מוקלד" בהדרגה.</p>' }
     ],
     edges: [
-      { from: 'user', to: 'app', label: 'הודעה' }, { from: 'app', to: 'api', label: 'messages[]' }, { from: 'api', to: 'llm' },
+      { from: 'user', to: 'app', label: 'הודעה' }, { from: 'app', to: 'api', label: 'JSON' }, { from: 'api', to: 'llm' },
       { from: 'kb', to: 'app', dashed: true, color: 'store', label: 'הקשר' },
       { from: 'llm', to: 'out', label: 'stream' }
     ]
@@ -1216,6 +1216,48 @@ def answer(question: str, context: str) -> str:
   }
 
   /* =====================================================================
+     RTL/bidi fixer (local workaround; core has none): in an RTL page, numeric ranges such as
+     "32–120" render reversed ("120–32") and LTR-only strings with neutrals ("d = 4096",
+     "messages[]") get scrambled. We wrap such runs in Unicode isolates (LRI…PDI), which works
+     for HTML and SVG text alike, and keep watching the page because panels/labs re-render.
+     ===================================================================== */
+  const HEB = /[֐-׿]/;
+  const NUM = '[~≈$]?\\d[\\d.,]*(?:[kKMBGT%]|d(?![A-Za-z_]))?\\+?';
+  const RANGE = new RegExp(NUM + '(?:\\s?[–\\-/×]\\s?' + NUM + ')+', 'g');
+  const BIDI_SKIP = 'pre,code,textarea,script,style,select,option,.mono,.out,.llm-chip,[dir="ltr"],svg[style*="ltr"]';
+  function fixTextNode(node) {
+    const t = node.data, par = node.parentNode;
+    if (!t || !par || t.indexOf('⁦') >= 0 || !/\S/.test(t)) return;
+    if (par.closest && par.closest(BIDI_SKIP)) return;
+    const inSvg = par instanceof SVGElement;
+    if (!HEB.test(t) && (inSvg ? /[^\sA-Za-z]/.test(t) : /\d/.test(t))) {
+      const m = t.match(/^(\s*)([\s\S]*?)(\s*)$/);
+      node.data = m[1] + '⁦' + m[2] + '⁩' + m[3];
+      return;
+    }
+    if (HEB.test(t)) { const r = t.replace(RANGE, x => '⁦' + x + '⁩'); if (r !== t) node.data = r; }
+  }
+  function fixTree(root) {
+    if (root.nodeType === 3) return fixTextNode(root);
+    if (root.nodeType !== 1) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const list = []; while (w.nextNode()) list.push(w.currentNode);
+    list.forEach(fixTextNode);
+  }
+  function installBidiFix(main) {
+    fixTree(main);
+    if (typeof MutationObserver === 'undefined') return;
+    const mo = new MutationObserver(muts => {
+      muts.forEach(m => {
+        if (m.type === 'characterData') fixTextNode(m.target);
+        else m.addedNodes.forEach(fixTree);
+      });
+    });
+    mo.observe(main, { childList: true, subtree: true, characterData: true });
+    LA.onCleanup(() => mo.disconnect());
+  }
+
+  /* =====================================================================
      registration
      ===================================================================== */
   LA.register({
@@ -1244,6 +1286,7 @@ def answer(question: str, context: str) -> str:
           { id: 'quiz', title: 'בוחן', render: renderQuiz }
         ]
       });
+      installBidiFix(main);
     }
   });
 })();

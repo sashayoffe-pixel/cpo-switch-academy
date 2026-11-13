@@ -311,8 +311,22 @@
       svg.appendChild(eLayer); svg.appendChild(nLayer); svg.appendChild(fxLayer);
       svg.fx = fxLayer;
       stage.innerHTML = ''; stage.appendChild(svg);
+      fitLabels();
       selected = null; defaultPanel(spec);
       opts.onRender && opts.onRender(api, stack.length - 1);
+    }
+    /* shrink node labels that are wider than their shape (needs the svg in the DOM) */
+    function fitLabels() {
+      Object.values(nodeEls).forEach(o => {
+        const n = o.n, w = (n.shape === 'circle' ? Math.max(n.w || 150, n.h || 56) * 0.86 : (n.shape === 'diamond' ? (n.w || 150) * 0.7 : (n.w || 150))) - 10;
+        o.g.querySelectorAll('.dg-label,.dg-sub').forEach(tx => {
+          let bw = 0; try { bw = tx.getBBox().width; } catch (e) { return; }
+          if (bw > w && bw > 0) {
+            const fs = parseFloat(getComputedStyle(tx).fontSize) || 14;
+            tx.style.fontSize = Math.max(8, fs * w / bw).toFixed(1) + 'px';
+          }
+        });
+      });
     }
     function select(n) {
       Object.values(nodeEls).forEach(o => o.g.classList.toggle('sel', o.n === n));
