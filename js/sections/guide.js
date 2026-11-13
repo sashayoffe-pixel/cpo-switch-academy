@@ -147,7 +147,8 @@
       C.h('div', { class: 'card', html: '<h3 style="margin-top:0">Phone & tablet</h3><ul>' +
         '<li>Best experience is landscape on a tablet or a laptop. The explorer and labs are wide.</li>' +
         '<li>No hover on touch screens: turn on <b>🏷 Labels</b> in the explorer and tap abbreviations to see their meaning.</li>' +
-        '<li>Progress (study-plan ticks) is stored per device.</li></ul>' }),
+        '<li>Progress (study-plan ticks) is stored per device.</li>' +
+        '<li><b>Offline (e.g. on a flight):</b> open the site once online, then <b>Add to Home Screen</b> (Safari → Share; Chrome → ⋮ → Install app). It then opens from its icon with no internet.</li></ul>' }),
       C.h('div', { class: 'card', html: '<h3 style="margin-top:0">Suggested route (first day)</h3><ol>' +
         '<li>Overview → why CPO.</li><li>Explorer: system → chassis → package → optical engine → PIC → MRM → ring physics.</li>' +
         '<li>Back up to chassis → External laser and Fiber plant.</li><li>Data-Flow Simulator with the CPO vs pluggable toggle.</li>' +

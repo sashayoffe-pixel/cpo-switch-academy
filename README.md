@@ -16,3 +16,11 @@ and a 650+ term glossary.
 * Built only from public information. Numbers are badged **NVIDIA public** (announced figures),
   **typical** (industry-typical) or **estimate** (model assumptions). Not an official NVIDIA resource.
 * `CONTRACT.md` documents the internal API and the architecture-node schema for contributors.
+
+## Offline use (flights, no internet)
+
+* **Laptop:** download the repo (Code → Download ZIP), unzip, and double-click `index.html`. Everything is local; no
+  internet is needed.
+* **Tablet / phone:** open the live site once while online, then use **Add to Home Screen** (iPad/iPhone: Safari →
+  Share → Add to Home Screen; Android: Chrome → ⋮ → Install app / Add to Home screen). Open it from the new icon,
+  click through a few sections, and it is cached for offline use. After an update, open it once online to refresh.
