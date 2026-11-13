@@ -1,1 +1,85 @@
-/* capstone module styles */
+/* capstone module styles — every class prefixed with cap- */
+.cap-small { font-size: 12.5px; }
+.cap-nfr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 10px 0; }
+@media (max-width: 900px) { .cap-nfr { grid-template-columns: 1fr; } }
+.cap-nfr .card { font-size: 14px; }
+
+/* chips */
+.cap-chip { background: var(--panel2); border: 1px solid var(--line2); color: var(--muted); border-radius: 99px; padding: 4px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+.cap-chip.on { color: #fff; border-color: var(--acc); background: rgba(167,139,250,.2); box-shadow: 0 0 10px rgba(167,139,250,.25); }
+
+/* KPI tiles */
+.cap-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 10px 0; }
+.cap-kpi { background: #0e1530; border: 1px solid var(--line2); border-radius: 12px; padding: 8px 12px; }
+.cap-kpi-l { font-size: 12.5px; color: var(--muted); }
+.cap-kpi-v { font-size: 21px; font-weight: 800; font-family: var(--mono); direction: ltr; text-align: right; color: #fff; }
+.cap-kpi-n { font-size: 12px; color: var(--dim); }
+.cap-kpi.ok { border-color: rgba(74,222,128,.5); } .cap-kpi.ok .cap-kpi-v { color: var(--ok); }
+.cap-kpi.bad { border-color: rgba(248,113,113,.5); } .cap-kpi.bad .cap-kpi-v { color: var(--warn); }
+.cap-kpi.warn { border-color: rgba(245,158,11,.5); } .cap-kpi.warn .cap-kpi-v { color: var(--amber); }
+.cap-calls { font-size: 17px; }
+
+/* routing table */
+.cap-route td { font-size: 13.5px; }
+.cap-route td:nth-child(3) { min-width: 200px; }
+.cap-route tr:last-child td { background: rgba(167,139,250,.08); border-top: 2px solid var(--line2); }
+.cap-total { font-size: 17px; color: var(--ok); }
+.cap-split { display: flex; gap: 2px; height: 18px; border-radius: 6px; overflow: hidden; margin: 8px 0 4px; background: #0e1530; }
+.cap-split i { display: block; height: 100%; min-width: 0; }
+.cap-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.cap-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 6px; vertical-align: middle; }
+
+/* trace */
+.cap-q { background: rgba(96,165,250,.08); border: 1px solid rgba(96,165,250,.3); border-radius: 12px; padding: 10px 14px; margin: 8px 0; }
+.cap-meters { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1000px) { .cap-meters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cap-meters .cap-kpi-v { font-size: 18px; }
+.cap-nw { white-space: nowrap; }
+.cap-step-model { margin-bottom: 4px; }
+.cap-quote { margin-top: 8px; padding: 8px 12px; border-inline-start: 3px solid var(--acc2); background: rgba(56,189,248,.07); border-radius: 8px; font-style: italic; }
+.cap-log { margin-top: 8px; }
+.cap-log .tbl { font-size: 13px; }
+
+/* project tree (file names are LTR) */
+.cap-tree { direction: ltr; text-align: left; background: #0a0f1f; border: 1px solid var(--line2); border-radius: 12px; padding: 10px 6px; font-family: var(--mono); font-size: 13.5px; }
+.cap-tree-row { padding: 2px 6px; border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cap-tree-row:hover, .cap-tree-row.sel { background: rgba(167,139,250,.14); }
+.cap-tree-row.dir { color: #fbbf24; font-weight: 700; }
+.cap-tree-d { color: #6b7aa6; font-weight: 400; font-style: italic; margin-left: 14px; }
+.cap-tree-info { margin-top: 8px; padding: 8px 12px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); }
+
+/* dashboard */
+.cap-dash { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 10px 0; }
+@media (max-width: 1100px) { .cap-dash { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cap-tile { background: #0e1530; border: 1px solid var(--line2); border-radius: 14px; padding: 10px 12px; }
+.cap-tile.bad { border-color: rgba(248,113,113,.55); }
+.cap-tile-h { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 13.5px; color: var(--muted); }
+.cap-tile-v { font-size: 26px; font-weight: 800; font-family: var(--mono); direction: ltr; text-align: right; margin: 2px 0; }
+.cap-tile-n { font-size: 12px; color: var(--dim); }
+.cap-up { color: var(--ok); } .cap-down { color: var(--warn); }
+.cap-spark { width: 100%; height: auto; display: block; margin-top: 6px; }
+.cap-spark-t { stroke: #6c78a0; stroke-width: 1; stroke-dasharray: 4 3; }
+.cap-spark-l { fill: none; stroke: #38bdf8; stroke-width: 2; stroke-linejoin: round; }
+.cap-spark-p { fill: #38bdf8; stroke: #0e1530; stroke-width: 1.5; }
+.cap-spark-p.bad { fill: #f87171; }
+.cap-verdict { margin-top: 8px; padding: 10px 14px; border-radius: 10px; font-weight: 700; }
+.cap-verdict.ok { background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.4); }
+.cap-verdict.bad { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.4); }
+
+/* risk matrix */
+.cap-risk-wrap { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .cap-risk-wrap { grid-template-columns: 1fr; } }
+.cap-risk { display: grid; grid-template-columns: 90px repeat(3, minmax(0, 1fr)); gap: 6px; }
+.cap-risk-ax { display: grid; place-items: center; font-size: 12.5px; color: var(--muted); text-align: center; }
+.cap-risk-c { min-height: 92px; border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--line); }
+.cap-risk-c.sev1 { background: rgba(74,222,128,.07); }
+.cap-risk-c.sev2 { background: rgba(245,158,11,.09); }
+.cap-risk-c.sev3 { background: rgba(248,113,113,.12); }
+.cap-risk-b { text-align: start; background: rgba(11,16,32,.7); border: 1px solid var(--line2); color: var(--text); border-radius: 8px; padding: 3px 8px; font: inherit; font-size: 12.5px; cursor: pointer; }
+.cap-risk-b:hover, .cap-risk-b.on { border-color: var(--amber); }
+
+/* rollout & exercises */
+.cap-phase p { margin: 6px 0; }
+.cap-ex h4 { color: #dbe1ff; }
+.cap-hints { font-size: 14px; color: var(--muted); margin: 4px 0 8px; }
+.cap-hints:empty { display: none; }
