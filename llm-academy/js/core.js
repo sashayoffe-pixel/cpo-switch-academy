@@ -443,7 +443,24 @@
     }
     renderNav();
   }
+  /* RTL fix: isolate numeric ranges like "32–120" or "0.1-0.3" so the bidi algorithm doesn't reverse them */
+  const RANGE_RE = /(\d[\d.,]*\s?[%kKMB×]?\s?[–—-]\s?\d[\d.,]*)/g;
+  function isolateRanges(root) {
+    if (!root || root.nodeType === 3 && !root.parentNode) return;
+    const walker = document.createTreeWalker(root.nodeType === 3 ? root.parentNode : root, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => (!/\d[\d.,]*\s?[%kKMB×]?\s?[–—-]\s?\d/.test(n.nodeValue) || n.nodeValue.indexOf('\u2066') >= 0 ||
+        n.parentNode.closest('pre,code,textarea,script,style,.mono,.out,[dir=ltr]')) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+    });
+    const hits = []; while (walker.nextNode()) hits.push(walker.currentNode);
+    hits.forEach(n => { n.nodeValue = n.nodeValue.replace(RANGE_RE, '\u2066$1\u2069'); });
+  }
   function start() {
+    const mainEl = document.getElementById('main');
+    if (window.MutationObserver && mainEl) {
+      let pending = false;
+      new MutationObserver(() => { if (pending) return; pending = true; requestAnimationFrame(() => { pending = false; isolateRanges(mainEl); }); })
+        .observe(mainEl, { childList: true, subtree: true, characterData: true });
+    }
     document.addEventListener('click', ev => {
       const b = ev.target.closest('.code .copy'); if (!b) return;
       const raw = b.closest('.code').querySelector('code').getAttribute('data-raw');
