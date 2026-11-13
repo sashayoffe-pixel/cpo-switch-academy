@@ -147,7 +147,7 @@
       { id: 'mask', x: 310, y: 175, w: 140, label: 'מסכה סיבתית', sub: 'עתיד = −∞', color: 'warn', info: '<p>טוקן i מורשה להסתכל רק על j ≤ i. מוסיפים <code>−∞</code> לכל ציון "עתידי", ואחרי softmax המשקל שלו 0.</p><p>זה מה שהופך את המודל ל-<b>decoder</b> אוטורגרסיבי: באימון אפשר לחזות את <b>כל</b> המיקומים במקביל (כל אחד רואה רק את העבר), ובהסקה — ההתנהגות זהה.</p>' },
       { id: 'smax', x: 150, y: 175, w: 130, label: 'Softmax', sub: 'משקלי קשב', color: 'ctrl', info: '<p>כל שורה הופכת להתפלגות (סכום 1): "כמה אחוז מתשומת הלב של טוקן i הולכים לכל טוקן j".</p>' },
       { id: 'wsum', x: 310, y: 410, w: 140, label: 'A · V', sub: 'סכום משוקלל', color: 'ctrl', info: '<p>הפלט של טוקן i הוא <b>ממוצע משוקלל של וקטורי ה-V</b> לפי משקלי הקשב: <code>outᵢ = Σⱼ Aᵢⱼ·vⱼ</code>. כך "הוא" מקבל לתוכו מידע מ"החתול".</p>' },
-      { id: 'wo', x: 140, y: 410, w: 140, label: 'Concat + W_O', sub: 'H ראשים → d', color: 'llm', info: '<p>כל H הראשים רצים במקביל, כל אחד לומד דפוס אחר (תחביר, הפניה לאחור, "הטוקן הקודם"...). משרשרים את הפלטים ומקרינים עם <code>W_O</code> חזרה ל-d, ואז מוסיפים ל-residual.</p>' },
+      { id: 'wo', x: 140, y: 410, w: 140, label: 'Concat + W_O', sub: 'H ראשים ← d', color: 'llm', info: '<p>כל H הראשים רצים במקביל, כל אחד לומד דפוס אחר (תחביר, הפניה לאחור, "הטוקן הקודם"...). משרשרים את הפלטים ומקרינים עם <code>W_O</code> חזרה ל-d, ואז מוסיפים ל-residual.</p>' },
       { id: 'kv', x: 480, y: 330, w: 120, h: 60, shape: 'db', label: 'KV cache', color: 'store', info: '<p>בזמן יצירה, K ו-V של טוקנים קודמים <b>לא משתנים</b> (בזכות המסכה הסיבתית). לכן שומרים אותם בזיכרון ומחשבים בכל צעד רק את ה-Q/K/V של הטוקן החדש.</p><p>המחיר: זיכרון שגדל ליניארית עם אורך ההקשר — <code>2 · L · H_kv · dₕ · bytes</code> לכל טוקן. ראו את מחשבון הזיכרון בהמשך.</p>' },
       { id: 'heads', x: 820, y: 420, w: 130, h: 56, label: '× H ראשים', sub: 'למשל 32–128', color: 'ext', info: '<p><b>Multi-Head</b>: במקום ראש קשב אחד ברוחב d, מפצלים ל-H ראשים צרים. כל ראש יכול להתמחות בקשר אחר. דוגמאות שנמצאו במחקר: "previous-token head", "induction head" (מעתיק דפוסים שחוזרים בהקשר), ראשים תחביריים.</p>' }
     ],
@@ -194,12 +194,12 @@
       { id: 'ids', x: 450, y: 515, w: 170, label: 'מזהי טוקנים', sub: '[1532, 87, 9921, …]', color: 'data', info: '<p>הקלט של הרשת הוא <b>רק מספרים שלמים</b> — אינדקסים לאוצר המילים (vocab) בגודל V ≈ 100k–260k טיפוסית. הרשת אף פעם לא רואה "אותיות".</p>' },
       { id: 'emb', x: 450, y: 425, w: 170, label: 'Embedding', sub: 'טבלה V × d', color: 'llm', info: '<p>מטריצה <code>E</code> בגודל <code>V × d</code>; כל מזהה בוחר <b>שורה</b> — וקטור של d מספרים. דוגמה: 128,256 × 4,096 ≈ <b>525M</b> פרמטרים.</p><p>הווקטורים נלמדים: טוקנים בעלי שימוש דומה מסתיימים קרובים במרחב. זה לא "embedding model" לחיפוש (ראו סעיף Embeddings) — אבל אותו רעיון.</p>' },
       { id: 'pos', x: 760, y: 330, w: 170, label: 'מידע מיקום', sub: 'RoPE בתוך Q,K', color: 'ctrl', info: '<p>Attention עצמו "עיוור לסדר" — הוא רואה קבוצה, לא רצף. צריך להזריק מיקום:</p><ul><li><b>RoPE</b> (Rotary, הנפוץ היום): מסובבים את Q ו-K בזווית שתלויה במיקום. התוצאה: המכפלה q·k תלויה ב<b>מרחק היחסי</b>.</li><li>ישן יותר: וקטור מיקום נלמד/סינוסי שמתווסף ל-embedding (GPT-2, Transformer המקורי).</li></ul><p>הארכת חלון ההקשר (למשל מ-8k ל-128k+) נעשית בין השאר ע״י שינוי סקאלת הזוויות של RoPE ואימון המשך.</p>' },
-      { id: 'blocks', x: 450, y: 330, w: 250, h: 66, label: 'בלוקי Decoder × N', sub: 'טיפוסי: 32–120+ שכבות', color: 'llm', info: '<p>אותו מבנה חוזר N פעמים, עם משקלים שונים בכל שכבה. כאן נמצאים כמעט כל הפרמטרים.</p><ul><li>מודל ~8B: 32 שכבות, d=4096</li><li>מודל ~70B: 80 שכבות, d=8192</li><li>מודלי חזית: עשרות עד 100+ שכבות, d של אלפים רבים, לעתים MoE עם מאות מיליארדי פרמטרים.</li></ul><p>כלל אצבע למודל צפוף: <code>P ≈ 12 · L · d²</code> (+ embeddings). ל-32 שכבות ו-d=4096: ≈ 6.4B.</p><p>צללו פנימה לבלוק אחד.</p>', children: BLOCK_SPEC },
+      { id: 'blocks', x: 450, y: 330, w: 250, h: 66, label: 'בלוקי \u2066Decoder × N\u2069', sub: 'טיפוסי: 32–120+ שכבות', color: 'llm', info: '<p>אותו מבנה חוזר N פעמים, עם משקלים שונים בכל שכבה. כאן נמצאים כמעט כל הפרמטרים.</p><ul><li>מודל ~8B: 32 שכבות, d=4096</li><li>מודל ~70B: 80 שכבות, d=8192</li><li>מודלי חזית: עשרות עד 100+ שכבות, d של אלפים רבים, לעתים MoE עם מאות מיליארדי פרמטרים.</li></ul><p>כלל אצבע למודל צפוף: <code>P ≈ 12 · L · d²</code> (+ embeddings). ל-32 שכבות ו-d=4096: ≈ 6.4B.</p><p>צללו פנימה לבלוק אחד.</p>', children: BLOCK_SPEC },
       { id: 'norm', x: 450, y: 235, w: 170, label: 'RMSNorm סופי', color: 'ext', info: '<p>נרמול אחרון על ה-residual stream לפני ההקרנה לאוצר המילים.</p>' },
       { id: 'head', x: 450, y: 145, w: 170, label: 'LM Head', sub: 'unembedding d × V', color: 'llm', info: '<p>כפל מטריצה <code>logits = h · W_U</code> שממפה את וקטור המיקום <b>האחרון</b> (d מספרים) ל-<b>V ציונים</b> — logit אחד לכל טוקן אפשרי.</p><p>במודלים קטנים מרבים "לקשור" (weight tying) את W_U למטריצת ה-Embedding כדי לחסוך פרמטרים.</p>' },
       { id: 'softmax', x: 250, y: 60, w: 150, label: 'Softmax', sub: 'logits → p', color: 'ctrl', info: '<p class="mono">pᵢ = exp(zᵢ / T) / Σⱼ exp(zⱼ / T)</p><p>הופך ציונים להתפלגות הסתברות. <code>T</code> (temperature) מחדד/משטח אותה — ראו מעבדת הדגימה.</p>' },
       { id: 'sample', x: 80, y: 60, w: 130, label: 'דגימה', sub: 'טוקן אחד', color: 'ok', info: '<p>בוחרים טוקן אחד מההתפלגות (greedy / temperature / top-p). הטוקן נוסף לרצף — וכל המכונה רצה שוב לטוקן הבא. זה ה-<b>autoregressive loop</b>.</p>' },
-      { id: 'params', x: 760, y: 515, w: 190, label: 'איפה הפרמטרים?', sub: 'מיליארדים', color: 'neuron', info: '<p>חלוקה טיפוסית במודל צפוף (~8B):</p><ul><li>MLP: ~65–70%</li><li>Attention: ~20%</li><li>Embedding + LM head: ~10–15%</li><li>Norms: זניח</li></ul><p>זיכרון המשקלים = פרמטרים × בייטים: 8B ב-bf16 ≈ 16GB; 70B ≈ 140GB (יותר מכרטיס 80GB אחד — ולכן מפצלים בין GPUs או עושים קוונטיזציה).</p>' }
+      { id: 'params', x: 760, y: 515, w: 190, label: 'איפה הפרמטרים?', sub: 'מיליארדים', color: 'neuron', info: '<p>חלוקה טיפוסית במודל צפוף (~8B):</p><ul><li>MLP: ~65–70%</li><li>Attention: ~20%</li><li>Embedding + LM head: ~10–15%</li><li>Norms: זניח</li></ul><p>זיכרון המשקלים = פרמטרים × בייטים. ב-bf16: <code>8B × 2B ≈ 16GB</code>, <code>70B × 2B ≈ 140GB</code> — יותר מכרטיס 80GB אחד, ולכן מפצלים בין כמה GPUs או עושים קוונטיזציה.</p>' }
     ],
     edges: [
       { from: 'ids', to: 'emb', label: 'T' },
@@ -217,10 +217,10 @@
     intro: '<p><b>בתוך שרת ההסקה.</b> שלושה חלקים עיקריים: <b>Tokenizer</b> (טקסט ↔ מספרים, דטרמיניסטי), <b>המודל</b> (רשת הנוירונים — כאן הכסף והחישוב), ו-<b>Sampler</b> (בחירת טוקן). מסביבם: scheduler שמאחד בקשות של משתמשים רבים, ו-KV cache.</p>',
     nodes: [
       { id: 'in', x: 830, y: 190, w: 120, label: 'פרומפט מלא', sub: 'system + היסטוריה', color: 'data', info: '<p>ההודעות (system, user, assistant, תוצאות כלים) מרונדרות לטקסט אחד לפי <b>chat template</b> עם טוקנים מיוחדים שמסמנים "כאן מתחיל תור המשתמש" וכו׳. המודל לא יודע מה זה "הודעה" — הוא רואה רצף טוקנים אחד ארוך.</p>' },
-      { id: 'tok', x: 670, y: 190, w: 130, label: 'Tokenizer', sub: 'טקסט → מזהים', color: 'tool', info: '<p>אלגוריתם <b>דטרמיניסטי</b> (לא נוירוני) — בדרך כלל byte-level BPE: מתחילים מבייטים ומיזוגים שנלמדו מקורפוס. אוצר מילים טיפוסי: 100k–260k.</p><p>השלכות: עלות, אורך הקשר, ובעיות מוכרות (ספירת אותיות, חשבון עם מספרים ארוכים). <b>עברית</b> בדרך כלל עולה יותר טוקנים לאותו תוכן. ראו מעבדת הטוקנייזר.</p>' },
+      { id: 'tok', x: 670, y: 190, w: 130, label: 'Tokenizer', sub: 'טקסט ← מזהים', color: 'tool', info: '<p>אלגוריתם <b>דטרמיניסטי</b> (לא נוירוני) — בדרך כלל byte-level BPE: מתחילים מבייטים ומיזוגים שנלמדו מקורפוס. אוצר מילים טיפוסי: 100k–260k.</p><p>השלכות: עלות, אורך הקשר, ובעיות מוכרות (ספירת אותיות, חשבון עם מספרים ארוכים). <b>עברית</b> בדרך כלל עולה יותר טוקנים לאותו תוכן. ראו מעבדת הטוקנייזר.</p>' },
       { id: 'model', x: 470, y: 190, w: 160, h: 64, label: 'Transformer', sub: 'מיליארדי פרמטרים', color: 'llm', info: '<p>רשת הנוירונים. מקבלת T מזהים, מחזירה <b>logits</b> לטוקן הבא. רצה על מאיצים (GPU/TPU/Trainium), המשקלים מפוצלים בין כמה שבבים (tensor/pipeline parallelism).</p><p>שני מצבי עבודה:</p><ul><li><b>Prefill</b> — כל הפרומפט במקביל; חסום-חישוב (compute-bound); קובע את זמן התגובה הראשונה (TTFT).</li><li><b>Decode</b> — טוקן אחד בכל צעד; חסום-רוחב-פס-זיכרון; קובע את קצב הזרימה.</li></ul><p>צללו פנימה לארכיטקטורה.</p>', children: TRANSFORMER_SPEC },
-      { id: 'sampler', x: 275, y: 190, w: 130, label: 'Sampler', sub: 'logits → טוקן', color: 'ctrl', info: '<p>מקבל וקטור logits באורך V ובוחר טוקן: greedy, temperature, top-k, top-p, וגם בדיקות עצירה — טוקן סיום (EOS), <code>max_tokens</code>, stop sequences. כאן גם נאכפים <b>structured outputs</b> (מסכת טוקנים שאינם תואמים לסכמה).</p>' },
-      { id: 'detok', x: 95, y: 190, w: 130, label: 'Detokenizer', sub: 'מזהה → טקסט', color: 'tool', info: '<p>ממיר מזהה חזרה לבייטים ולטקסט וזורם ללקוח (streaming). אות עברית היא 2 בייטים ב-UTF-8 — טוקן יכול להסתיים באמצע תו, ולכן השרת מחזיק בייטים עד שתו שלם מוכן.</p>' },
+      { id: 'sampler', x: 275, y: 190, w: 130, label: 'Sampler', sub: 'logits ← טוקן', color: 'ctrl', info: '<p>מקבל וקטור logits באורך V ובוחר טוקן: greedy, temperature, top-k, top-p, וגם בדיקות עצירה — טוקן סיום (EOS), <code>max_tokens</code>, stop sequences. כאן גם נאכפים <b>structured outputs</b> (מסכת טוקנים שאינם תואמים לסכמה).</p>' },
+      { id: 'detok', x: 95, y: 190, w: 130, label: 'Detokenizer', sub: 'מזהה ← טקסט', color: 'tool', info: '<p>ממיר מזהה חזרה לבייטים ולטקסט וזורם ללקוח (streaming). אות עברית היא 2 בייטים ב-UTF-8 — טוקן יכול להסתיים באמצע תו, ולכן השרת מחזיק בייטים עד שתו שלם מוכן.</p>' },
       { id: 'kv', x: 470, y: 335, w: 150, h: 64, shape: 'db', label: 'KV cache', sub: 'לכל רצף', color: 'store', info: '<p>זיכרון ה-K וה-V של כל הטוקנים הקודמים, בכל השכבות. מאפשר ל-decode לחשב רק את הטוקן החדש. מנוהל בדפים (PagedAttention) כדי לשרת אלפי רצפים במקביל. <b>Prompt caching</b> ב-API שומר את הקידומת הזו בין בקשות.</p>' },
       { id: 'sched', x: 470, y: 55, w: 170, label: 'Scheduler', sub: 'continuous batching', color: 'ext', info: '<p>מאחד בקשות של משתמשים רבים לאותו forward pass כדי לנצל את ה-GPU. בקשות נכנסות ויוצאות מה-batch בכל צעד.</p><p>תופעת לוואי: סדר פעולות נקודה-צפה תלוי ב-batch — אחד המקורות ל<b>אי-דטרמיניזם</b> גם כשהדגימה "חמדנית".</p>' }
     ],
@@ -269,6 +269,7 @@
     const svgBox = h('div', { class: 'llm-neuron-box' });
     const calc = h('div', { class: 'out llm-calc' });
     const actPlot = h('div', { class: 'llm-actplot' });
+    const lossBox = h('div', { class: 'llm-lossbox' });
     const warn = h('div', { class: 'llm-warnline' });
     const sliders = { x: [], w: [] };
     const setRow = (row, v) => { row.input.value = v; row.querySelector('.sl-val').textContent = fx(v); };
@@ -331,14 +332,14 @@
       g.appendChild(s('circle', { cx: X(zc), cy: Y(yc), r: 5, fill: '#fbbf24', stroke: '#0b1020', 'stroke-width': 2 }));
       g.appendChild(s('text', { x: x1, y: Y(0) + 14, 'text-anchor': 'end', class: 'llm-svg-t tiny muted' }, 'z'));
       g.appendChild(s('text', { x: X(0) + 6, y: y0 + 8, 'text-anchor': 'start', class: 'llm-svg-t tiny muted' }, `f(z) = ${A.formula}`));
-      // loss sparkline
-      if (st.hist.length > 1) {
-        const mx = Math.max(...st.hist) || 1; const n = st.hist.length;
-        const pts = st.hist.map((v, k) => `${(200 + k / (n - 1) * 90).toFixed(1)},${(130 - v / mx * 40).toFixed(1)}`).join(' ');
-        g.appendChild(s('polyline', { points: pts, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2 }));
-        g.appendChild(s('text', { x: 245, y: 84, 'text-anchor': 'middle', class: 'llm-svg-t tiny muted' }, 'loss לאורך האימון'));
-      }
       actPlot.innerHTML = ''; actPlot.appendChild(g);
+      const sp = s('svg', { viewBox: '0 0 160 60', class: 'llm-spark', style: 'direction:ltr' });
+      sp.appendChild(s('line', { x1: 4, y1: 52, x2: 156, y2: 52, stroke: '#34427a' }));
+      if (st.hist.length > 1) {
+        const mx = Math.max(...st.hist) || 1, n = st.hist.length;
+        sp.appendChild(s('polyline', { points: st.hist.map((v, k) => `${(4 + k / (n - 1) * 152).toFixed(1)},${(52 - v / mx * 44).toFixed(1)}`).join(' '), fill: 'none', stroke: '#38bdf8', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+      } else sp.appendChild(s('text', { x: 80, y: 32, 'text-anchor': 'middle', class: 'llm-svg-t tiny muted' }, 'train to see loss'));
+      lossBox.innerHTML = ''; lossBox.appendChild(sp);
     }
     function update() {
       const r = forward();
@@ -397,7 +398,7 @@
       h('div', { class: 'llm-lab-grid' },
         h('div', null, svgBox, h('div', { class: 'llm-plotrow' }, actPlot, h('div', { class: 'llm-legend' },
           h('div', { html: '<i class="llm-sw pos"></i> משקל חיובי (מעודד)' }), h('div', { html: '<i class="llm-sw neg"></i> משקל שלילי (מדכא)' }),
-          h('div', { class: 'muted', text: 'עובי הקשת ∝ |w|' }))), warn),
+          h('div', { class: 'muted', text: 'עובי הקשת ∝ |w|' }), h('div', { class: 'llm-ctrl-h', text: 'loss לאורך האימון' }), lossBox)), warn),
         h('div', null, ctrl)),
       calc));
     update();
@@ -484,6 +485,7 @@
     const e = FEATS.map((f, k) => (f === feat || f === 'const' ? 1 : 0) + ((fnv(word + '#' + k) % 1000) / 1000 - 0.5) * 0.2);
     return e;
   }
+  const iso = w => '\u2068' + w + '\u2069';
   function attentionLab(el) {
     const st = { lang: 'he', head: 'sem', causal: true, lambda: 0.1, row: 5, cell: null };
     const grid = h('div', { class: 'llm-heat' });
@@ -542,15 +544,15 @@
         class: 'llm-att-w' + (j === i ? ' q' : '') + (st.causal && j > i ? ' fut' : ''),
         style: { background: j === i ? null : `rgba(245,158,11,${(row[j] * 0.95).toFixed(3)})` }, title: fx(row[j] * 100, 1) + '%'
       }, w)));
-      const top = row.map((a, j) => [a, j]).sort((a, b) => b[0] - a[0]).slice(0, 3).map(([a, j]) => `${c.toks[j][0]} ${fx(a * 100, 1)}%`).join(' · ');
+      const top = row.map((a, j) => [a, j]).sort((a, b) => b[0] - a[0]).slice(0, 3).map(([a, j]) => `${iso(c.toks[j][0])} ${fx(a * 100, 1)}%`).join(' · ');
       const j = st.cell == null || st.cell > c.n - 1 ? row.indexOf(Math.max(...row)) : st.cell;
-      let txt = `query  "${c.toks[i][0]}"  (${FEAT_HE[c.toks[i][1]]})   top-3 → ${top}\n`;
+      let txt = `query  "${iso(c.toks[i][0])}"  (${iso(FEAT_HE[c.toks[i][1]])})   top-3 → ${top}\n`;
       if (st.head === 'sem') {
         txt += `q = e·W_Q = [${c.Q[i].map(v => fx(v, 2)).join(', ')}]\n` +
-          `k("${c.toks[j][0]}") = e·W_K = [${c.K[j].map(v => fx(v, 2)).join(', ')}]\n` +
+          `k("${iso(c.toks[j][0])}") = e·W_K = [${c.K[j].map(v => fx(v, 2)).join(', ')}]\n` +
           `q·k = ${fx(c.Q[i].reduce((a, q, k) => a + q * c.K[j][k], 0), 3)}   ÷ √${c.d} = ${fx(c.Q[i].reduce((a, q, k) => a + q * c.K[j][k], 0) / Math.sqrt(c.d), 3)}` +
           `   − λ·|i−j| = ${fx(c.raw[i][j], 3)}\n`;
-      } else txt += `score("${c.toks[j][0]}") = ${fx(c.raw[i][j], 3)}   (ראש מיקומי — תלוי רק במרחק/מיקום)\n`;
+      } else txt += `score("${iso(c.toks[j][0])}") = ${fx(c.raw[i][j], 3)}   (${iso('ראש מיקומי — תלוי רק במרחק/מיקום')})\n`;
       txt += c.S[i][j] === -Infinity ? `mask: j > i → −∞ → weight 0` : `softmax over row → weight = ${fx(row[j], 4)}`;
       detail.textContent = txt;
     }
@@ -628,7 +630,7 @@
       h('button', { type: 'button', class: 'btn ghost', onclick: () => { tS.input.value = 1; kS.input.value = 8; pS.input.value = 1; st.T = 1; st.k = 8; st.p = 1; tS.fire(); kS.fire(); pS.fire(); result.textContent = ''; st.last = null; render(); } }, '⟲ איפוס'));
     el.appendChild(h('div', { class: 'lab' },
       h('div', { class: 'lab-h' }, '🧪 מעבדה 4 — דגימת הטוקן הבא: temperature · top-k · top-p'),
-      h('p', { class: 'muted', html: 'הקשר: <b>"חשבון החשמל שלי החודש ___"</b>. ה-LM head החזיר logits ל-8 מועמדים (במציאות — ל-~100k+). סדר הפעולות: logits ÷ T → softmax → top-k → top-p (nucleus) → נרמול מחדש → דגימה. הפס השקוף = ההתפלגות המקורית (T=1).' }),
+      h('p', { class: 'muted', html: 'הקשר: <b>"חשבון החשמל שלי החודש ___"</b>. ה-LM head החזיר logits ל-8 מועמדים (במציאות — לכל אוצר המילים, יותר מ-100k). סדר הפעולות: logits ÷ T → softmax → top-k → top-p (nucleus) → נרמול מחדש → דגימה. הפס השקוף = ההתפלגות המקורית (T=1).' }),
       h('div', { class: 'llm-lab-grid' }, h('div', null, bars, result), h('div', null, tS, kS, pS, btns, info))));
     render();
   }
@@ -638,23 +640,23 @@
      ===================================================================== */
   function genLab(el) {
     const spec = {
-      width: 900, height: 300,
+      width: 900, height: 330,
       nodes: [
         { id: 'user', x: 830, y: 70, w: 120, label: 'משתמש', color: 'ui', info: '<p>שולח שאלה.</p>' },
         { id: 'app', x: 665, y: 70, w: 140, label: 'אפליקציה', sub: 'messages[]', color: 'ui', info: '<p>בונה את רשימת ההודעות + system prompt.</p>' },
         { id: 'api', x: 495, y: 70, w: 130, label: 'API', color: 'ext', info: '<p>אימות, rate limit, ניתוב.</p>' },
-        { id: 'tok', x: 325, y: 70, w: 140, label: 'Tokenizer', color: 'tool', info: '<p>טקסט → מזהים.</p>' },
-        { id: 'emb', x: 140, y: 70, w: 150, label: 'Embedding', sub: '+ מיקום', color: 'llm', info: '<p>מזהה → וקטור.</p>' },
+        { id: 'tok', x: 325, y: 70, w: 140, label: 'Tokenizer', color: 'tool', info: '<p>טקסט ← מזהים.</p>' },
+        { id: 'emb', x: 140, y: 70, w: 150, label: 'Embedding', sub: '+ מיקום', color: 'llm', info: '<p>מזהה ← וקטור.</p>' },
         { id: 'blocks', x: 140, y: 225, w: 150, label: 'N בלוקים', sub: 'prefill / decode', color: 'llm', info: '<p>Attention + MLP × N.</p>' },
-        { id: 'head', x: 325, y: 225, w: 140, label: 'LM Head', sub: 'logits', color: 'llm', info: '<p>וקטור אחרון → V ציונים.</p>' },
+        { id: 'head', x: 325, y: 225, w: 140, label: 'LM Head', sub: 'logits', color: 'llm', info: '<p>וקטור אחרון ← V ציונים.</p>' },
         { id: 'samp', x: 495, y: 225, w: 130, label: 'Sampler', color: 'ctrl', info: '<p>בחירת טוקן.</p>' },
-        { id: 'detok', x: 665, y: 225, w: 140, label: 'Detokenizer', sub: 'stream', color: 'tool', info: '<p>מזהה → טקסט, זורם ללקוח.</p>' },
-        { id: 'kv', x: 325, y: 150, w: 110, h: 44, shape: 'db', label: 'KV cache', color: 'store', info: '<p>K,V של כל הטוקנים הקודמים.</p>' }
+        { id: 'detok', x: 665, y: 225, w: 140, label: 'Detokenizer', sub: 'stream', color: 'tool', info: '<p>מזהה ← טקסט, זורם ללקוח.</p>' },
+        { id: 'kv', x: 325, y: 300, w: 120, h: 44, shape: 'db', label: 'KV cache', color: 'store', info: '<p>K,V של כל הטוקנים הקודמים.</p>' }
       ],
       edges: [
         { from: 'user', to: 'app' }, { from: 'app', to: 'api' }, { from: 'api', to: 'tok' }, { from: 'tok', to: 'emb' },
         { from: 'emb', to: 'blocks' }, { from: 'blocks', to: 'head' }, { from: 'head', to: 'samp' }, { from: 'samp', to: 'detok' },
-        { from: 'detok', to: 'app', label: 'SSE' }, { from: 'blocks', to: 'kv', dashed: true, both: true, color: 'store' },
+        { from: 'detok', to: 'app', label: 'SSE' }, { from: 'blocks', to: 'kv', dashed: true, both: true, color: 'store', bend: 20 },
         { from: 'samp', to: 'emb', dashed: true, color: 'neuron', bend: -60, label: 'הטוקן החדש' }
       ]
     };
@@ -769,7 +771,9 @@
           LA.slider('טוקני פלט', 50, 8000, 50, st.outT, v => { st.outT = v; render(); }, fmtInt),
           LA.slider('טוקני חשיבה', 0, 16000, 100, st.think, v => { st.think = v; render(); }, fmtInt))),
       out, formula,
-      h('p', { class: 'muted', html: 'מחירים לפי מחירון Anthropic (נובמבר 2026, $ למיליון טוקנים): Opus 5.5 — 4 / 20, Sonnet 5.5 — 2 / 10, Haiku 5.5 — 0.10 / 0.50; קריאת cache: Opus 0.20, Sonnet 0.10, Haiku — הערכה. <b>בדקו תמיד בדף המחירים העדכני.</b> מהירויות ה-prefill/decode הן <b>הנחות להמחשה בלבד</b> — מדדו אצלכם. טוקני חשיבה (thinking) מחויבים כפלט; את כמותם מכוונים דרך <code>effort</code>.' })));
+      h('div', { html: LA.table(['מודל', 'קלט $/1M', 'פלט $/1M', 'קריאת cache $/1M'], [
+        [LA.modelBadge('haiku'), M('0.10'), M('0.50'), M('~0.01') + ' (הערכה)'], [LA.modelBadge('sonnet'), M('2'), M('10'), M('0.10')], [LA.modelBadge('opus'), M('4'), M('20'), M('0.20')]]) }),
+      h('p', { class: 'muted', html: 'מחירון Anthropic נכון לנובמבר 2026 — <b>בדקו תמיד בדף המחירים העדכני.</b> מהירויות ה-prefill/decode הן <b>הנחות להמחשה בלבד</b> — מדדו אצלכם. טוקני חשיבה (thinking) מחויבים כפלט; את כמותם מכוונים דרך <code>effort</code>.' })));
     render();
   }
 
@@ -969,11 +973,11 @@ for step in range(3):
       width: 900, height: 270,
       nodes: [
         { id: 'pre', x: 790, y: 80, w: 160, label: 'Pretraining', sub: 'חיזוי הטוקן הבא', color: 'llm', info: '<p>המודל קורא כמויות עצומות של טקסט וקוד ולומד לחזות את הטוקן הבא (cross-entropy). זה השלב היקר ביותר — חודשים על אלפי מאיצים.</p><p>התוצאה: <b>base model</b> — יודע המון, ממשיך כל טקסט, אבל לא "עונה" — אם תשאלו שאלה הוא עלול להמשיך עם עוד שאלות.</p><p>כלל אצבע (Chinchilla): לאימון יעיל-חישוב ~20 טוקנים לכל פרמטר; בפועל מודלים מאומנים על הרבה יותר.</p>' },
-        { id: 'sft', x: 560, y: 80, w: 160, label: 'SFT', sub: 'כוונון להוראות', color: 'llm', info: '<p><b>Supervised Fine-Tuning</b>: אימון על דוגמאות "פרומפט → תשובה טובה" (כתובות ע״י אנשים או מסוננות). המודל לומד את פורמט השיחה, לענות במקום להמשיך, להשתמש בכלים.</p><p>אותה פונקציית loss — אבל רק על טוקני התשובה.</p>' },
+        { id: 'sft', x: 560, y: 80, w: 160, label: 'SFT', sub: 'כוונון להוראות', color: 'llm', info: '<p><b>Supervised Fine-Tuning</b>: אימון על דוגמאות "פרומפט ← תשובה טובה" (כתובות ע״י אנשים או מסוננות). המודל לומד את פורמט השיחה, לענות במקום להמשיך, להשתמש בכלים.</p><p>אותה פונקציית loss — אבל רק על טוקני התשובה.</p>' },
         { id: 'pref', x: 330, y: 80, w: 170, label: 'RLHF / RLAIF', sub: 'העדפות + RL', color: 'llm', info: '<p>מייצרים כמה תשובות, ומדרגים מה עדיף. <b>RLHF</b>: בני אדם משווים → מאמנים reward model → מאמנים את המודל ב-RL למקסם אותו. <b>RLAIF / Constitutional AI</b> (הגישה ש-Anthropic פיתחה): מודל AI שופט לפי עקרונות כתובים ("חוקה").</p><p>בנוסף: <b>RL עם תגמול בר-אימות</b> (בדיקות קוד, תשובות מתמטיות) — מקור עיקרי לשיפור ביכולות היגיון ו"חשיבה" (thinking).</p><p>סכנות: reward hacking, חנפנות (sycophancy) — המודל לומד מה מתגמלים, לא בהכרח מה נכון.</p>' },
-        { id: 'dep', x: 110, y: 80, w: 160, label: 'Eval → פריסה', sub: 'מדדים, בטיחות', color: 'ok', info: '<p>בדיקות יכולת (benchmarks), red-teaming, הערכות בטיחות, ואז פריסה כ-API. מכאן המשקלים <b>קפואים</b> — המודל לא לומד מהשיחות שלכם בזמן אמת. "ידע חדש" נכנס רק דרך ההקשר (RAG/כלים) או גרסת מודל חדשה.</p>' },
+        { id: 'dep', x: 110, y: 80, w: 160, label: 'Eval ← פריסה', sub: 'מדדים, בטיחות', color: 'ok', info: '<p>בדיקות יכולת (benchmarks), red-teaming, הערכות בטיחות, ואז פריסה כ-API. מכאן המשקלים <b>קפואים</b> — המודל לא לומד מהשיחות שלכם בזמן אמת. "ידע חדש" נכנס רק דרך ההקשר (RAG/כלים) או גרסת מודל חדשה.</p>' },
         { id: 'd1', x: 790, y: 215, w: 160, h: 60, shape: 'db', label: 'קורפוס ענק', sub: 'טריליוני טוקנים', color: 'store', info: '<p>אינטרנט ציבורי מסונן, ספרים, קוד, מאמרים, דאטה סינתטי. איכות וסינון (dedup, הסרת זבל) חשובים לא פחות מכמות. כאן נקבע ה-<b>knowledge cutoff</b>.</p>' },
-        { id: 'd2', x: 560, y: 215, w: 160, h: 60, shape: 'db', label: 'דוגמאות הדגמה', sub: 'פרומפט → תשובה', color: 'store', info: '<p>עשרות עד מאות אלפי דוגמאות איכותיות. כאן גם נכנסים פורמטים: tool use, JSON, סירוב מנומק.</p>' },
+        { id: 'd2', x: 560, y: 215, w: 160, h: 60, shape: 'db', label: 'דוגמאות הדגמה', sub: 'פרומפט ← תשובה', color: 'store', info: '<p>עשרות עד מאות אלפי דוגמאות איכותיות. כאן גם נכנסים פורמטים: tool use, JSON, סירוב מנומק.</p>' },
         { id: 'd3', x: 330, y: 215, w: 160, h: 60, shape: 'db', label: 'השוואות A/B', sub: 'אדם / AI + חוקה', color: 'store', info: '<p>זוגות תשובות עם העדפה, או סביבות עם תגמול אוטומטי (טסטים, פותרי מתמטיקה).</p>' },
         { id: 'd4', x: 110, y: 215, w: 160, h: 60, shape: 'db', label: 'סטי בדיקה', sub: 'benchmarks · red-team', color: 'store', info: '<p>חייבים להיות <b>נקיים</b> מדאטה האימון — אחרת "זיהום" (contamination) מנפח את התוצאות. ראו "עין של אלגוריתמאי".</p>' }
       ],
@@ -1036,7 +1040,7 @@ for step in range(3):
         '<b>מודל Embedding</b> — מודל נפרד (לרוב encoder דו-כיווני) שמקבל טקסט שלם ומחזיר <b>וקטור אחד</b> שמייצג את המשמעות. משמש לחיפוש סמנטי, RAG, clustering, זיהוי כפילויות.'
       ]) +
       LA.table(['', 'מודל Embedding', 'מודל יצירה (LLM decoder)'], [
-        ['קלט → פלט', 'טקסט → וקטור (למשל 1024 מספרים)', 'טקסט → טקסט (טוקן אחר טוקן)'],
+        ['קלט → פלט', 'טקסט ← וקטור (למשל 1024 מספרים)', 'טקסט ← טקסט (טוקן אחר טוקן)'],
         ['Attention', 'לרוב דו-כיווני (כל טוקן רואה הכול)', 'סיבתי (רק עבר)'],
         ['עלות', 'זול מאוד, מהיר, ניתן ל-batch ענק', 'יקר יותר, במיוחד פלט'],
         ['שימוש טיפוסי', 'אינדוקס ואחזור ב-RAG, המלצות, סיווג', 'תשובות, סיכום, קוד, סוכנים'],

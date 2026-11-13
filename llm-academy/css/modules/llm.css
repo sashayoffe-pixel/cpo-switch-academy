@@ -95,3 +95,5 @@
 .llm-tier-id { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
 .llm-cos { display: inline-block; min-width: 44px; text-align: center; padding: 1px 6px; border-radius: 6px; font-family: var(--mono); direction: ltr; }
 .llm-jump .btn { font-size: 13.5px; padding: 5px 11px; }
+.llm-lossbox { background: rgba(11,16,32,.55); border: 1px solid var(--line); border-radius: 8px; }
+.llm-spark { width: 100%; height: auto; display: block; }
