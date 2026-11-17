@@ -1,0 +1,14 @@
+{
+  "name": "CPO Switch Academy",
+  "short_name": "CPO Academy",
+  "description": "Interactive training on NVIDIA-style co-packaged optics switches and AI factories. Works offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07090c",
+  "theme_color": "#07090c",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

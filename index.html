@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#07090c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CPO Academy">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
 <title>CPO Switch Academy — NVIDIA Co-Packaged Optics Training</title>
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/arch.css">
@@ -47,6 +55,41 @@
 <script src="js/sections/noise.js"></script>
 <script src="js/sections/budgets.js"></script>
 <script src="js/sections/glossary.js"></script>
-<script>CPO.start();</script>
+<div id="offline-status" role="status"></div>
+<style>
+#offline-status{position:fixed;right:14px;bottom:14px;z-index:9000;font:600 13px/1.3 "Segoe UI",system-ui,sans-serif;padding:8px 14px;border-radius:999px;
+  background:#0b1118;border:1px solid #243042;color:#8a99ad;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;cursor:pointer}
+#offline-status.show{display:block}
+#offline-status.ok{color:#76b900;border-color:#76b900}
+#offline-status.warn{color:#f5b301;border-color:#f5b301}
+</style>
+<script>CPO.start();
+// Offline support (only over http/https; opening index.html from disk already works offline).
+(function () {
+  const pill = document.getElementById('offline-status');
+  function show(txt, cls, hideAfter) {
+    pill.textContent = txt; pill.className = 'show ' + (cls || '');
+    clearTimeout(pill._t); if (hideAfter) pill._t = setTimeout(() => pill.classList.remove('show'), hideAfter);
+  }
+  pill.addEventListener('click', () => pill.classList.remove('show'));
+  if (!/^https?:$/.test(location.protocol)) return;
+  if (!('serviceWorker' in navigator)) { show('This browser cannot save the app for offline use', 'warn', 8000); return; }
+  let done = false, tries = 0;
+  navigator.serviceWorker.addEventListener('message', e => {
+    const d = e.data || {};
+    if (d.type !== 'offline-status' || done) return;
+    if (d.cached >= d.total) { done = true; show(navigator.onLine ? '✓ Saved for offline use' : '✓ Offline mode: running from this device', 'ok', 6000); }
+    else show('Saving for offline use… ' + d.cached + ' / ' + d.total, '');
+  });
+  function ask() {
+    if (done || tries++ > 120) { if (!done) show('Not saved for offline use yet: keep the app open while online and reload', 'warn'); return; }
+    const sw = navigator.serviceWorker.controller || (navigator.serviceWorker._reg && navigator.serviceWorker._reg.active);
+    if (sw) sw.postMessage({ type: 'offline-status' }); else show('Saving for offline use…', '');
+    setTimeout(ask, 1000);
+  }
+  navigator.serviceWorker.register('sw.js').then(reg => { navigator.serviceWorker._reg = reg; ask(); })
+    .catch(() => show('Could not save the app for offline use', 'warn', 8000));
+})();
+</script>
 </body>
 </html>
