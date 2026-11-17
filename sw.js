@@ -41,6 +41,13 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
+// The page asks how many app files are saved, to show "Saved for offline use".
+self.addEventListener('message', e => {
+  if (!e.data || e.data.type !== 'offline-status') return;
+  e.waitUntil(caches.open(VERSION).then(c => Promise.all(FILES.map(f => c.match(f)))).then(hits => {
+    e.source.postMessage({ type: 'offline-status', cached: hits.filter(Boolean).length, total: FILES.length, version: VERSION });
+  }));
+});
 // Cache first (works offline); refresh the cached copy in the background when online.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
