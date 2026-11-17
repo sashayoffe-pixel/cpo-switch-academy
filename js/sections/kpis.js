@@ -198,6 +198,9 @@
       }
       search.addEventListener('input', () => { query = search.value; apply(); });
       apply();
+      // case-study hand-off: pre-filter to the KPIs that matter for the case
+      const scn = CPO.scenario && CPO.scenario.take('kpis');
+      if (scn) { if (scn.set && scn.set.q) { search.value = query = scn.set.q; apply(); } CPO.scenario.banner(c, scn); }
 
       // animation: radar sweep + gauge ease with live jitter
       let t0 = null;

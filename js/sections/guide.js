@@ -36,6 +36,10 @@
       how: ['Press <b>Next →</b> (or <span class="gd-kbd">→</span>) from start to finish; diagrams zoom into the next level by themselves.',
         'Each level\'s orange box, <b>"What this means for you as system engineer"</b>, connects the physics to the budgets, interfaces and trade-offs you will own.',
         'Drag the sliders on the <b>link budget</b> and <b>power budget</b> steps: try to make the link fail, then fix it.'] },
+    { id: 'cases', ico: '🧪', t: 'Case Studies & Pareto', what: 'Six realistic CPO-switch problems: a fading laser, errors on job start, a dirty connector, WDM crosstalk, congestion mistaken for optics, and power-supply jitter. Each is solved step by step with the KPIs, Data-Flow Simulator, Noise Lab and Budgets. Then a Pareto plan for improving energy per bit, link interruptions and link margin by 20 %.',
+      how: ['Press <b>Next</b> through the course. In each case, the <b>"Open … with this setup"</b> buttons open a tool with the fault already injected and a purple banner saying what to look for; <b>← Back to the case</b> returns you.',
+        'Answer the diagnosis question to reveal the root cause, the fix and how to prevent it.',
+        'On the Pareto pages, tick or untick levers and watch whether you reach the 20 % goal. Watch for the trap lever.'] },
     { id: 'architecture', ico: '🔬', t: 'Architecture Explorer', what: 'The centerpiece: a zoomable map of the whole system, 67 levels deep, from the AI-factory network down to transistors, ring resonators and laser quantum wells.',
       how: ['<b>Guided tour:</b> press <b>Next ▶</b> (or <span class="gd-kbd">→</span>) to visit every block in order, from the system down to the deepest physics; <b>◀ Prev</b> / <span class="gd-kbd">←</span> goes back.',
         'Or explore freely: <b>click a glowing region</b> in the diagram to zoom into that block. Hover a region to see its label.',
@@ -92,7 +96,7 @@
         C.h('h3', { style: 'margin-top:0' }, 'Quick start'),
         C.h('ol', { class: 'gd-steps', html:
           '<li>Use the <b>left menu</b> to switch sections. On narrow screens it shrinks to icons.</li>' +
-          '<li>Start with the <b>AI Factory Course</b>, then the <b>CPO Switch Course</b>: just press <b>Next</b> until the end of each. Then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
+          '<li>Start with the <b>AI Factory Course</b>, then the <b>CPO Switch Course</b> and <b>Case Studies & Pareto</b>: just press <b>Next</b> until the end of each. Then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
           '<li>Use <b>Next ▶</b> / the <span class="gd-kbd">→</span> key to move step by step; you never have to choose where to click.</li>' +
           '<li><b>Hover any dotted-underlined abbreviation</b> (e.g. ' + C.tip('MRM') + ') for its definition. <span class="gd-kbd">Alt</span>+click opens it in the Glossary.</li>' +
           '<li>Move the <b>sliders</b> in the Simulator, Noise Lab and Budgets and watch everything update live.</li>' })),

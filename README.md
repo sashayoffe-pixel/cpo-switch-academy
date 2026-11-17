@@ -5,7 +5,8 @@ Interactive, browser-based training on NVIDIA-style **co-packaged optics (CPO) s
 guided **AI factory course** (building → network topology → rack → GPU → transistor, tied to the CPO switches,
 plus an appendix on AI factories, topologies and GPUs), a guided **CPO switch course** for new system
 engineers (network → box → package → ASIC → optical engine → laser → ring modulator → receiver, link/power budgets,
-control loops, the SE job, and an appendix), KPIs, a real-time data-flow
+control loops, the SE job, and an appendix), and **case studies & Pareto**: six debug cases that open the
+simulators with the fault injected, plus a plan to improve energy/bit, link interruptions and link margin by 20 %, KPIs, a real-time data-flow
 simulator, a noise & signal-integrity lab, system budgets (link, BER/FEC, power, thermal, accuracy, jitter)
 and a 650+ term glossary.
 

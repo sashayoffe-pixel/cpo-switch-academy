@@ -1397,6 +1397,10 @@
     });
     updateMetrics();
 
+    // case-study hand-off: apply the injected fault and show what to look for
+    const scn = C.scenario && C.scenario.take('dataflow');
+    if (scn) { if (scn.set) { Object.assign(st, scn.set); syncControls(); paramsChanged(); } C.scenario.banner(root, scn); }
+
     return function cleanup() { stop(); cleanups.forEach(f => { try { f(); } catch (e) { /* ignore */ } }); };
   }
 
