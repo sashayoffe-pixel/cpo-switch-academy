@@ -30,6 +30,7 @@
     </div>
     <nav id="navlinks"></nav>
     <div class="nav-foot">
+      <button id="motion-toggle" class="btn" style="width:100%;margin-bottom:10px;font-size:12.5px;padding:6px 8px"></button>
       <div class="muted">Public-info training aid.<br><span class="badge nv">NVIDIA public</span> <span class="badge typ">typical</span></div>
     </div>
   </aside>
@@ -37,6 +38,24 @@
 </div>
 <div id="gtip" role="tooltip"></div>
 
+<script>
+/* Animations setting. The device's "Reduce Motion" setting pauses the animated signals; the user can override it here.
+   localStorage 'cpo-motion' = 'on' | 'off' | (unset = follow the device). Every module reads prefers-reduced-motion
+   through matchMedia at load, so a chosen setting is applied by answering that query accordingly. */
+(function () {
+  var pref = null; try { pref = localStorage.getItem('cpo-motion'); } catch (e) {}
+  var mm = window.matchMedia, Q = /prefers-reduced-motion\s*:\s*reduce/;
+  var sys = !!(mm && mm.call(window, '(prefers-reduced-motion: reduce)').matches);
+  var reduced = pref === 'on' ? false : pref === 'off' ? true : sys;
+  window.CPO_MOTION = { pref: pref, system: sys, reduced: reduced };
+  if (mm && pref) window.matchMedia = function (q) {
+    if (Q.test(q)) return { matches: reduced, media: q, onchange: null, addListener: function () {}, removeListener: function () {},
+      addEventListener: function () {}, removeEventListener: function () {}, dispatchEvent: function () { return false; } };
+    return mm.call(window, q);
+  };
+  document.documentElement.classList.add(reduced ? 'motion-off' : 'motion-on');
+})();
+</script>
 <script src="js/core.js"></script>
 <script src="js/course-engine.js"></script>
 <script src="js/data/glossary.js"></script>
@@ -55,6 +74,11 @@
 <script src="js/sections/noise.js"></script>
 <script src="js/sections/budgets.js"></script>
 <script src="js/sections/glossary.js"></script>
+<div id="motion-banner" role="dialog" aria-label="Animations paused">
+  <span>⏸ Your device has <b>Reduce Motion</b> turned on, so the moving signals in the diagrams are paused.</span>
+  <button class="btn primary" data-m="on">▶ Play animations</button>
+  <button class="btn" data-m="off">Keep them still</button>
+</div>
 <div id="offline-status" role="status"></div>
 <style>
 #offline-status{position:fixed;right:14px;bottom:14px;z-index:9000;font:600 13px/1.3 "Segoe UI",system-ui,sans-serif;padding:8px 14px;border-radius:999px;
@@ -62,8 +86,22 @@
 #offline-status.show{display:block}
 #offline-status.ok{color:#76b900;border-color:#76b900}
 #offline-status.warn{color:#f5b301;border-color:#f5b301}
+#motion-banner{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:9500;display:none;gap:10px;align-items:center;flex-wrap:wrap;
+  max-width:min(760px,94vw);padding:10px 14px;border-radius:12px;background:#0b1118;border:1px solid #f5b301;color:#e6edf5;
+  font:14px/1.4 "Segoe UI",system-ui,sans-serif;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+#motion-banner.show{display:flex}
+#motion-banner span{flex:1 1 280px}
 </style>
 <script>CPO.start();
+// Animations toggle (nav footer) and one-time banner when the device asks for reduced motion.
+(function () {
+  const M = window.CPO_MOTION, btn = document.getElementById('motion-toggle'), ban = document.getElementById('motion-banner');
+  function set(v) { try { localStorage.setItem('cpo-motion', v); } catch (e) {} location.reload(); }
+  btn.textContent = M.reduced ? '▶ Animations: off (turn on)' : '⏸ Animations: on (turn off)';
+  btn.addEventListener('click', () => set(M.reduced ? 'on' : 'off'));
+  if (M.system && !M.pref) ban.classList.add('show');
+  ban.addEventListener('click', e => { const v = e.target && e.target.dataset && e.target.dataset.m; if (v) set(v); });
+})();
 // Offline support (only over http/https; opening index.html from disk already works offline).
 (function () {
   const pill = document.getElementById('offline-status');

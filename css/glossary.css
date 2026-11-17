@@ -45,6 +45,6 @@
 .gl-empty { padding: 40px; text-align: center; color: var(--muted); }
 @keyframes gl-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes gl-pulse { 0%, 100% { background: var(--panel); } 50% { background: color-mix(in srgb, var(--accent) 16%, var(--panel)); } }
-@media (prefers-reduced-motion: reduce) {
+html.motion-off {
   .gl-card, .gl-card.gl-focus { animation: none; transition: none; }
 }
