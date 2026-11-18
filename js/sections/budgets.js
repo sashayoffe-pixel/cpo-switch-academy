@@ -1039,12 +1039,15 @@
     id: 'budgets', title: 'System Budgets', icon: '📊', order: 50,
     render(container, sub) {
       curTab = null; tabClean = null;
+      const scn = C.scenario && C.scenario.take('budgets');
+      if (scn && scn.set) Object.assign(linkSt, LINK_DEF, scn.set);
       container.appendChild(h('div', { class: 'bd-head' }, h('div', null, h('h1', null, '📊 System Budgets'),
         h('p', { class: 'h-sub', html: 'Every CPO switch closes six budgets at once: optical power, error rate, electrical power, temperature, control accuracy and timing. Move the sliders — the physics updates live. Numbers are ' + B('typ') + ' or ' + B('est') + ' unless marked ' + B('nv') + '.' }))));
       tabEls = TABS.map(t => h('div', { class: 'tab', 'data-tab': t.id, onclick: () => C.go('budgets/' + t.id) }, h('span', null, t.icon), t.label));
       container.appendChild(h('div', { class: 'tabs bd-tabs' }, tabEls));
       bodyEl = h('div', { class: 'bd-body' }); container.appendChild(bodyEl);
       showTab(sub);
+      if (scn) C.scenario.banner(container, scn);
       return () => { if (tabClean) { try { tabClean(); } catch (e) { console.error(e); } } tabClean = null; curTab = null; bodyEl = null; };
     },
     onSubRoute(sub) { showTab(sub); }

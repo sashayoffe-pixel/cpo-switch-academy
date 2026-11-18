@@ -1,6 +1,6 @@
 /* Offline support: caches every file of the app so it works with no internet once installed
    ("Add to Home Screen"). Bump VERSION whenever files change so tablets pick up the update. */
-const VERSION = 'cpo-academy-v2';
+const VERSION = 'cpo-academy-v4';
 const FILES = [
     './',
     'index.html',
@@ -21,9 +21,11 @@ const FILES = [
     'js/arch/nodes-optics.js',
     'js/arch/nodes-ptc.js',
     'js/core.js',
+    'js/scenario.js',
     'js/course-engine.js',
     'js/data/glossary.js',
     'js/sections/budgets.js',
+    'js/sections/cases-course.js',
     'js/sections/cpo-course-appendix.js',
     'js/sections/cpo-course.js',
     'js/sections/dataflow.js',
@@ -33,6 +35,8 @@ const FILES = [
     'js/sections/guide.js',
     'js/sections/home.js',
     'js/sections/kpis.js',
+    'js/sections/net-course-appendix.js',
+    'js/sections/net-course.js',
     'js/sections/noise.js',
 ];
 self.addEventListener('install', e => {

@@ -564,6 +564,9 @@
     buildMath(st, panes.math);
     update(st);
     setTab(st, TABS.some(t => t[0] === sub) ? sub : 'lab');
+    // case-study hand-off: start from the typical link plus the case's impairments
+    const scn = C.scenario && C.scenario.take('noise');
+    if (scn) { if (scn.set) applyPreset(st, scn.set); C.scenario.banner(container, scn); }
     return function cleanup() {
       if (st.stopLab) st.stopLab(); st.stopLab = null;
       if (st.stopThumbs) st.stopThumbs(); st.stopThumbs = null;
