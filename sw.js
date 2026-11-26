@@ -1,6 +1,6 @@
 /* Offline support: caches every file of the app so it works with no internet once installed
    ("Add to Home Screen"). Bump VERSION whenever files change so tablets pick up the update. */
-const VERSION = 'cpo-academy-v6';
+const VERSION = 'cpo-academy-v8';
 const FILES = [
     './',
     'index.html',
@@ -50,7 +50,8 @@ const FILES = [
     'js/sections/noise.js',
 ];
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' bypasses the browser's HTTP cache so a new version never stores stale copies
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim()));

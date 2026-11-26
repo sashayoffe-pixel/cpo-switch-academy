@@ -139,7 +139,10 @@
     if (sw) sw.postMessage({ type: 'offline-status' }); else show('Saving for offline use…', '');
     setTimeout(ask, 1000);
   }
-  navigator.serviceWorker.register('sw.js').then(reg => { navigator.serviceWorker._reg = reg; ask(); })
+  // When a new version takes over, reload once so the user sees it immediately (not only on the next launch).
+  const hadController = !!navigator.serviceWorker.controller; let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !reloaded) { reloaded = true; location.reload(); } });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => { navigator.serviceWorker._reg = reg; reg.update().catch(() => {}); ask(); })
     .catch(() => show('Could not save the app for offline use', 'warn', 8000));
 })();
 </script>
