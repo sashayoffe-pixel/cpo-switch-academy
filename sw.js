@@ -1,6 +1,6 @@
 /* Offline support: caches every file of the app so it works with no internet once installed
    ("Add to Home Screen"). Bump VERSION whenever files change so tablets pick up the update. */
-const VERSION = 'cpo-academy-v6';
+const VERSION = 'cpo-academy-v7';
 const FILES = [
     './',
     'index.html',
