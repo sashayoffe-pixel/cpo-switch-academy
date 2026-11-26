@@ -388,8 +388,8 @@
 
   // ================================================================ course
   C.course.register({
-    id: 'cases', title: 'Case Studies & Pareto', icon: '🧪', order: 9.5, storeKey: 'cases-last-step',
-    finish: { go: 'kpis', label: 'Go to the KPI catalogue →' },
+    id: 'cases', title: 'Case Studies & Pareto', icon: '🧪', order: 9.75, storeKey: 'cases-last-step',
+    finish: { go: 'landscape', label: 'Continue: Industry Landscape →' },
     pages: [
       { id: 'start', title: 'Welcome', ch: 'Start', build(p, ctx) {
         p.appendChild(h('div', { class: 'af-hero' },

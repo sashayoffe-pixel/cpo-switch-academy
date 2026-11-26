@@ -9,7 +9,9 @@ control loops, the SE job, and an appendix), and **case studies & Pareto**: six 
 simulators with the fault injected, plus a plan to improve energy/bit, link interruptions and link margin by 20 %, and a **networking & protocols**
 course (Ethernet, IP, TCP/UDP, RDMA/RoCE, InfiniBand, lossless Ethernet, NVLink, PCIe, I2C/SPI/UART/JTAG/MDIO/PMBus,
 CMIS, out-of-band management, standards map), and an **electronics & board design** course for engineers from a
-mechanics/optics background (power delivery, PDN, signal integrity, PCB, thermal/mechanics, EMC, design reviews), KPIs, a real-time data-flow
+mechanics/optics background (power delivery, PDN, signal integrity, PCB, thermal/mechanics, EMC, design reviews), plus courses on
+**thermal & heat transfer**, **optics manufacturing**, **firmware & software**, **reliability statistics**,
+**requirements & V&V**, the **industry landscape**, **interview practice** and a personal **first-90-days plan**, KPIs, a real-time data-flow
 simulator, a noise & signal-integrity lab, system budgets (link, BER/FEC, power, thermal, accuracy, jitter)
 and a 650+ term glossary.
 

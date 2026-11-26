@@ -636,10 +636,10 @@
 
   // ================================================================ course
   C.course.register({
-    id: 'net-course', title: 'Networking & Protocols', icon: '🌐', order: 9.7, storeKey: 'nw-last-step',
+    id: 'net-course', title: 'Networking & Protocols', icon: '🌐', order: 9.4, storeKey: 'nw-last-step',
     levels: LV, levelCh: 'The stack', levelBoxTitle: '🛠 What this means for you as system engineer',
     levelHint: 'Press <b>Next</b> to move on; the dashed green region shows where the next step zooms in.',
-    finish: { go: 'cases', label: 'Continue: Case Studies & Pareto →' },
+    finish: { go: 'firmware', label: 'Continue: Firmware & Software →' },
     pages: [
       { id: 'start', title: 'Welcome', ch: 'Start', build(p, ctx) {
         p.appendChild(h('div', { class: 'af-hero' },

@@ -532,7 +532,7 @@
 
   // ================================================================ course
   C.course.register({
-    id: 'elec-course', title: 'Electronics & Boards', icon: '🔌', order: 9.8, storeKey: 'el-last-step',
+    id: 'elec-course', title: 'Electronics & Boards', icon: '🔌', order: 9.3, storeKey: 'el-last-step',
     levels: LV, levelCh: 'From V to a 200G board', levelBoxTitle: '🛠 What this means for you as system engineer',
     levelHint: 'Press <b>Next</b> to move on. Every level maps the electronics onto mechanics and optics you already know.',
     finish: { go: 'net-course', label: 'Continue: Networking & Protocols →' },

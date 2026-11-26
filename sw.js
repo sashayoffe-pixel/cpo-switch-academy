@@ -1,6 +1,6 @@
 /* Offline support: caches every file of the app so it works with no internet once installed
    ("Add to Home Screen"). Bump VERSION whenever files change so tablets pick up the update. */
-const VERSION = 'cpo-academy-v5';
+const VERSION = 'cpo-academy-v6';
 const FILES = [
     './',
     'index.html',
@@ -37,6 +37,14 @@ const FILES = [
     'js/sections/guide.js',
     'js/sections/home.js',
     'js/sections/kpis.js',
+    'js/sections/thermal-course.js',
+    'js/sections/optics-mfg-course.js',
+    'js/sections/firmware-course.js',
+    'js/sections/reliability-course.js',
+    'js/sections/requirements-course.js',
+    'js/sections/landscape-course.js',
+    'js/sections/interview-course.js',
+    'js/sections/plan90-course.js',
     'js/sections/net-course-appendix.js',
     'js/sections/net-course.js',
     'js/sections/noise.js',
