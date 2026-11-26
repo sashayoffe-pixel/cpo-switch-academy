@@ -124,6 +124,47 @@
     }));
   }
 
+  // ---------------------------------------------------------------- standard welcome / finish pages
+  /* startPage({ eyebrow, title (html), intro (html), analogy:[[icon,title,text]], route:[html], note (html) }) */
+  function startPage(o) {
+    return { id: 'start', title: 'Welcome', ch: 'Start', build(p, ctx) {
+      p.appendChild(h('div', { class: 'af-hero' },
+        h('div', { class: 'af-eyebrow' }, o.eyebrow || 'Guided course'),
+        h('h1', { html: o.title }), h('p', { html: o.intro }),
+        o.analogy ? h('div', { class: 'af-analogy', html: o.analogy.map(a => '<div><span>' + a[0] + '</span><b>' + a[1] + '</b>' + a[2] + '</div>').join('') }) : null,
+        h('div', { class: 'af-cta' },
+          h('button', { class: 'btn primary af-bignext', onclick: () => ctx.next() }, (o.startLabel || 'Start the course') + ' →'),
+          ctx.resumeId && ctx.resumeId !== 'start' && ctx.resumeId !== 'done' ? h('button', { class: 'btn', onclick: () => ctx.goId(ctx.resumeId) }, 'Resume where you left off') : null)));
+      if (o.route) p.appendChild(h('div', { class: 'card', html: '<h3 style="margin-top:0">The route</h3><ol class="af-route">' + o.route.map(r => '<li>' + r + '</li>').join('') + '</ol>' + (o.note ? '<p class="muted" style="margin:0">' + o.note + '</p>' : '') }));
+    } };
+  }
+  /* donePage({ title (html), takeaways:[html], next:[[label, hash]], warn (html) }) */
+  function donePage(o) {
+    return { id: 'done', title: o.stepTitle || 'Course complete', ch: 'Finish', build(p, ctx) {
+      p.appendChild(h('div', { class: 'af-hero' },
+        h('div', { class: 'af-eyebrow' }, o.eyebrow || 'Course complete'),
+        h('h1', { html: o.title }),
+        h('ul', { class: 'af-takeaways', html: o.takeaways.map(x => '<li>' + x + '</li>').join('') }),
+        h('div', { class: 'af-cta' }, (o.next || []).map(([l, hs], i) => h('button', { class: 'btn' + (i ? '' : ' primary'), onclick: () => C.go(hs) }, l)),
+          h('button', { class: 'btn', onclick: () => ctx.goId('start') }, '↺ Restart'))));
+      if (o.warn) p.appendChild(h('div', { class: 'callout warn', html: o.warn }));
+    } };
+  }
+  // simple page from a builder: page(id, title, ch, heading, sub, fn(p, ctx))
+  function page(id, title, ch, heading, sub, fn) {
+    return { id, title, ch, build(p, ctx) { if (heading) p.appendChild(h('h2', { class: 'af-ph' }, heading)); if (sub) p.appendChild(h('p', { class: 'h-sub', html: sub })); if (fn) fn(p, ctx); } };
+  }
+  // slider panel: sliders(p, title, rows [[key,label,min,max,step,value,unit,badge]], onUpdate(values, rightEl), note)
+  function sliders(p, title, rows, onUpd, note) {
+    const inputs = {}; const card = h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, title));
+    rows.forEach(([k, lbl, mn, mx, st, v, u, tag]) => { const inp = h('input', { type: 'range', min: mn, max: mx, step: st, value: v }), out = h('output'); inputs[k] = [inp, out, u]; card.appendChild(h('div', { class: 'slider-row' }, h('label', { html: lbl + (tag ? ' ' + B(tag) : '') }), inp, out)); inp.addEventListener('input', go); });
+    if (note) card.appendChild(h('p', { class: 'muted', style: 'font-size:12.5px', html: note }));
+    const right = h('div', { class: 'card' }); p.appendChild(h('div', { class: 'af-calc' }, card, right));
+    function go() { const v = {}; for (const k in inputs) { v[k] = +inputs[k][0].value; inputs[k][1].textContent = v[k] + (inputs[k][2] ? ' ' + inputs[k][2] : ''); } onUpd(v, right); C.linkify(right); }
+    go(); return inputs;
+  }
+  const fact = (v, l, tag) => '<div class="af-fact"><b>' + v + '</b><span>' + l + (tag === null ? '' : ' ' + B(tag || 'est')) + '</span></div>';
+
   // ---------------------------------------------------------------- the course runner
   function run(el, sub, def) {
     const LV = def.levels || [];
@@ -328,7 +369,7 @@
   }
 
   C.course = {
-    K, REDUCED, register, journeyBlock, appendixPages,
+    K, REDUCED, register, journeyBlock, appendixPages, startPage, donePage, page, sliders, fact,
     svg: { add, R, T, L, P, O, G, cap, along, ptsD, grid, polyLen }
   };
 })();

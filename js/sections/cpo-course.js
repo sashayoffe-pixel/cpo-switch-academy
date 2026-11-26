@@ -714,7 +714,7 @@
     id: 'cpo-course', title: 'CPO Switch Course', icon: '🔆', order: 9, storeKey: 'cs-last-step',
     levels: LV, levelCh: 'Inside the switch', levelBoxTitle: '🛠 What this means for you as system engineer',
     levelHint: 'Press <b>Next</b> and the picture zooms into the highlighted part. Orange tags open a deeper page in the Architecture Explorer (optional).',
-    finish: { go: 'architecture', label: 'Continue: Architecture Explorer tour →' },
+    finish: { go: 'thermal-course', label: 'Continue: Thermal & Heat Transfer →' },
     pages: [
       { id: 'start', title: 'Welcome', ch: 'Start', build(p, ctx) {
         p.appendChild(h('div', { class: 'af-hero' },

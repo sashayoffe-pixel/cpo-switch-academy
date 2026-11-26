@@ -44,6 +44,24 @@
       how: ['Press <b>Next →</b> from start to finish; each diagram animates the protocol (frames being learned, credits flowing, ECN/PFC kicking in, an I2C transaction bit by bit).',
         'Use the <b>port-name decoder</b> and the <b>efficiency calculator</b> to get a feel for names and overheads.',
         'The <b>standards map</b> tells you which body owns what (IEEE 802.3/802.1, IETF, IBTA, OIF, PCI-SIG, DMTF…).'] },
+    { id: 'elec-course', ico: '🔌', t: 'Electronics & Boards', what: 'Electronics and board design for an engineer with a mechanics/optics background, explained through mechanical and optical analogies. Covers V/I/R, capacitors and inductors, diodes and transistors, the PCB, power delivery, PDN and decoupling, signal integrity, differential pairs, the 200G channel, board thermal and mechanics, EMC/ESD and the design flow. Hands-on calculators (IR drop, buck converter, reflections), a board-review checklist and an appendix (analogy dictionary, schematics and datasheets, materials and manufacturing, lab instruments).',
+      how: ['Press <b>Next</b> from start to finish.', 'Use the three calculators to build intuition for currents, converters and reflections.', 'Print or keep the <b>board-review checklist</b> for your first design reviews.'] },
+    { id: 'plan90', ico: '🗓️', t: 'Your First 90 Days', what: 'A personal plan: rate yourself in 10 areas (radar chart), then follow checklists for days 1–30 (learn), 31–60 (contribute) and 61–90 (own), with the people to meet and documents to ask for. Ticks and notes are saved on this device.',
+      how: ['Start here, then re-rate yourself at day 30, 60 and 90.', 'Each checklist item links to the course or tool that helps with it.'] },
+    { id: 'thermal-course', ico: '🌡️', t: 'Thermal & Heat Transfer', what: 'Thermodynamics and heat transfer for CPO packaging: heat sources, conduction/convection/radiation, the thermal resistance network, TIMs, spreading, cold plates, the coolant loop, thermal crosstalk into the rings, transients, lasers and temperature, thermo-mechanics and test. With calculators for Tj, coolant flow and load-step ring drift.',
+      how: ['Press Next; each level is animated.', 'The three calculators let you close a thermal budget yourself.'] },
+    { id: 'optics-mfg', ico: '⚙️', t: 'Optics Manufacturing', what: 'How CPO optics are made: silicon-photonics fab, wafer test, EIC-on-PIC bonding, fiber attach & active alignment, laser screening, package assembly with known-good engines, final calibration; yield & cost and alignment-loss calculators; test statistics (Cpk, SPC) and the ecosystem.',
+      how: ['Strong on precision mechanics: alignment, adhesives, warpage.'] },
+    { id: 'firmware', ico: '💾', t: 'Firmware & Software', what: 'The software side: stack, boot sequence, control loops, telemetry, safe A/B updates, secure boot, state machines and software quality, with a PID tuner and an I2C polling-budget calculator.',
+      how: ['Focus on the hardware/software interface contract: the appendix has a checklist.'] },
+    { id: 'reliability', ico: '📉', t: 'Reliability Statistics', what: 'Interactive reliability tools: bathtub and FIT basics, Weibull shapes, FIT roll-up for a switch and fleet, Arrhenius and Coffin-Manson acceleration, what a test can demonstrate (chi-square), Weibull fitting of your own data, laser aging extrapolation, and link FIT → job goodput.',
+      how: ['Paste your own failure data into the Weibull fit.'] },
+    { id: 'requirements', ico: '📋', t: 'Requirements & V&V', what: 'Hands-on systems engineering: rewrite bad requirements, explore a CPO requirement tree, an interactive N² interface matrix, a verification-matrix exercise, an editable FMEA sorted by RPN, a weighted trade study, and review gates.',
+      how: ['Do the exercises; they score your answers.'] },
+    { id: 'landscape', ico: '🗺️', t: 'Industry Landscape', what: 'Why CPO now, the options (pluggable, LPO/LRO, NPO, CPO, optical I/O), the ecosystem and standards, optics for scale-up, roadmap trends, and strategic talking points. Public information only.',
+      how: ['Check company and product status before quoting externally.'] },
+    { id: 'interview', ico: '🎤', t: 'Interview & Practice', what: 'Spaced-repetition flashcards (saved per device), a 20-question quiz with explanations, open design questions with model answers, and behavioural (STAR) preparation with saved notes.',
+      how: ['A few minutes of flashcards on most days works best.'] },
     { id: 'architecture', ico: '🔬', t: 'Architecture Explorer', what: 'The centerpiece: a zoomable map of the whole system, 67 levels deep, from the AI-factory network down to transistors, ring resonators and laser quantum wells.',
       how: ['<b>Guided tour:</b> press <b>Next ▶</b> (or <span class="gd-kbd">→</span>) to visit every block in order, from the system down to the deepest physics; <b>◀ Prev</b> / <span class="gd-kbd">←</span> goes back.',
         'Or explore freely: <b>click a glowing region</b> in the diagram to zoom into that block. Hover a region to see its label.',
@@ -100,7 +118,7 @@
         C.h('h3', { style: 'margin-top:0' }, 'Quick start'),
         C.h('ol', { class: 'gd-steps', html:
           '<li>Use the <b>left menu</b> to switch sections. On narrow screens it shrinks to icons.</li>' +
-          '<li>Start with the <b>AI Factory Course</b>, then the <b>CPO Switch Course</b>, <b>Networking & Protocols</b> and <b>Case Studies & Pareto</b>: just press <b>Next</b> until the end of each. Then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
+          '<li>Start with <b>Your First 90 Days</b> (rate yourself), then follow the courses in menu order. Each course ends with a button to the next one: AI Factory → CPO Switch → Thermal → Optics Manufacturing → Electronics → Networking → Firmware → Reliability → Requirements & V&V → Case Studies → Industry Landscape → Interview & Practice. Just press <b>Next</b>.</li>' +
           '<li>Use <b>Next ▶</b> / the <span class="gd-kbd">→</span> key to move step by step; you never have to choose where to click.</li>' +
           '<li><b>Hover any dotted-underlined abbreviation</b> (e.g. ' + C.tip('MRM') + ') for its definition. <span class="gd-kbd">Alt</span>+click opens it in the Glossary.</li>' +
           '<li>Move the <b>sliders</b> in the Simulator, Noise Lab and Budgets and watch everything update live.</li>' })),
