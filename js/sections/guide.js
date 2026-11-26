@@ -44,6 +44,8 @@
       how: ['Press <b>Next →</b> from start to finish; each diagram animates the protocol (frames being learned, credits flowing, ECN/PFC kicking in, an I2C transaction bit by bit).',
         'Use the <b>port-name decoder</b> and the <b>efficiency calculator</b> to get a feel for names and overheads.',
         'The <b>standards map</b> tells you which body owns what (IEEE 802.3/802.1, IETF, IBTA, OIF, PCI-SIG, DMTF…).'] },
+    { id: 'elec-course', ico: '🔌', t: 'Electronics & Boards', what: 'Electronics and board design for an engineer with a mechanics/optics background, explained through mechanical and optical analogies. Covers V/I/R, capacitors and inductors, diodes and transistors, the PCB, power delivery, PDN and decoupling, signal integrity, differential pairs, the 200G channel, board thermal and mechanics, EMC/ESD and the design flow. Hands-on calculators (IR drop, buck converter, reflections), a board-review checklist and an appendix (analogy dictionary, schematics and datasheets, materials and manufacturing, lab instruments).',
+      how: ['Press <b>Next</b> from start to finish.', 'Use the three calculators to build intuition for currents, converters and reflections.', 'Print or keep the <b>board-review checklist</b> for your first design reviews.'] },
     { id: 'architecture', ico: '🔬', t: 'Architecture Explorer', what: 'The centerpiece: a zoomable map of the whole system, 67 levels deep, from the AI-factory network down to transistors, ring resonators and laser quantum wells.',
       how: ['<b>Guided tour:</b> press <b>Next ▶</b> (or <span class="gd-kbd">→</span>) to visit every block in order, from the system down to the deepest physics; <b>◀ Prev</b> / <span class="gd-kbd">←</span> goes back.',
         'Or explore freely: <b>click a glowing region</b> in the diagram to zoom into that block. Hover a region to see its label.',
@@ -100,7 +102,7 @@
         C.h('h3', { style: 'margin-top:0' }, 'Quick start'),
         C.h('ol', { class: 'gd-steps', html:
           '<li>Use the <b>left menu</b> to switch sections. On narrow screens it shrinks to icons.</li>' +
-          '<li>Start with the <b>AI Factory Course</b>, then the <b>CPO Switch Course</b>, <b>Networking & Protocols</b> and <b>Case Studies & Pareto</b>: just press <b>Next</b> until the end of each. Then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
+          '<li>Start with the <b>AI Factory Course</b>, then the <b>CPO Switch Course</b>, <b>Electronics & Boards</b>, <b>Networking & Protocols</b> and <b>Case Studies & Pareto</b>: just press <b>Next</b> until the end of each. Then continue with the <b>Architecture Explorer</b> tour (also Next, Next…).</li>' +
           '<li>Use <b>Next ▶</b> / the <span class="gd-kbd">→</span> key to move step by step; you never have to choose where to click.</li>' +
           '<li><b>Hover any dotted-underlined abbreviation</b> (e.g. ' + C.tip('MRM') + ') for its definition. <span class="gd-kbd">Alt</span>+click opens it in the Glossary.</li>' +
           '<li>Move the <b>sliders</b> in the Simulator, Noise Lab and Budgets and watch everything update live.</li>' })),

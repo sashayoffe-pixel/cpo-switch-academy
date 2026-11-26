@@ -115,10 +115,11 @@ exist the engine shows it disabled ("coming soon"), so cross-agent ids below are
 | I Guided courses (shared engine) | js/course-engine.js, css/factory.css |
 | I AI Factory course (building → transistor) | js/sections/factory.js, js/sections/factory-appendix.js |
 | J CPO Switch course (system engineer) | js/sections/cpo-course.js, js/sections/cpo-course-appendix.js |
+| M Electronics & Boards course | js/sections/elec-course.js, js/sections/elec-course-appendix.js |
 | L Networking & Protocols course | js/sections/net-course.js, js/sections/net-course-appendix.js |
 | K Case studies & Pareto | js/sections/cases-course.js, js/scenario.js (tool hand-off; hooks in dataflow/noise/budgets/kpis) |
 
-Section ids/orders: home 0, guide 5, factory 8, cpo-course 9, cases 9.5, net-course 9.7, architecture 10, kpis 20, dataflow 30, noise 40, budgets 50, glossary 90.
+Section ids/orders: home 0, guide 5, factory 8, cpo-course 9, cases 9.5, net-course 9.7, elec-course 9.8, architecture 10, kpis 20, dataflow 30, noise 40, budgets 50, glossary 90.
 
 ## Quality bar
 * Visual: lots of SVG/canvas animation, glow, flowing particles, live plots; smooth transitions. Respect

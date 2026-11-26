@@ -8,7 +8,8 @@ engineers (network → box → package → ASIC → optical engine → laser →
 control loops, the SE job, and an appendix), and **case studies & Pareto**: six debug cases that open the
 simulators with the fault injected, plus a plan to improve energy/bit, link interruptions and link margin by 20 %, and a **networking & protocols**
 course (Ethernet, IP, TCP/UDP, RDMA/RoCE, InfiniBand, lossless Ethernet, NVLink, PCIe, I2C/SPI/UART/JTAG/MDIO/PMBus,
-CMIS, out-of-band management, standards map), KPIs, a real-time data-flow
+CMIS, out-of-band management, standards map), and an **electronics & board design** course for engineers from a
+mechanics/optics background (power delivery, PDN, signal integrity, PCB, thermal/mechanics, EMC, design reviews), KPIs, a real-time data-flow
 simulator, a noise & signal-integrity lab, system budgets (link, BER/FEC, power, thermal, accuracy, jitter)
 and a 650+ term glossary.
 
